@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student Profile — Interactive Wireframe</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root{
+    --line:#8A8A8A;
+    --line-dark:#333;
+    --text:#333;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family: Helvetica, Arial, sans-serif;
+    color:var(--text);
+    background:#fff;
+    display:flex;
+    min-height:100vh;
+  }
+
+  .sidebar{
+    width:64px;
+    border-right:1px solid var(--line-dark);
+    padding:20px 0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+    flex-shrink:0;
+  }
+  .nav-icon{
+    width:14px; height:14px;
+    border:1px solid var(--line-dark);
+    border-radius:50%;
+  }
+
+  .main{flex:1; display:flex; flex-direction:column;}
+
+  .header{
+    border-bottom:1px solid var(--line-dark);
+    padding:28px 32px 24px;
+    text-align:center;
+  }
+  .header h1{
+    font-size:20px;
+    font-weight:normal;
+    margin-bottom:16px;
+  }
+  .search-pill{
+    border:1px solid var(--line-dark);
+    border-radius:20px;
+    height:34px;
+    max-width:420px;
+    margin:0 auto;
+  }
+
+  .content{padding:24px 32px;}
+
+  /* Persistent student strip — stays visible across all tabs */
+  .student-strip{
+    display:flex;
+    align-items:center;
+    gap:22px;
+    border:1px solid var(--line-dark);
+    padding:14px 20px;
+    margin-bottom:18px;
+    font-size:13px;
+    flex-wrap:wrap;
+  }
+  .student-strip .avatar-circle{width:36px; height:36px; font-size:9px;}
+  .student-strip .strip-item{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    padding-left:22px;
+    border-left:1px solid var(--line);
+  }
+  .student-strip .strip-item:first-of-type{border-left:none; padding-left:0;}
+  .student-strip .strip-label{font-size:10.5px; color:var(--line);}
+  .student-strip .strip-value{font-size:13px;}
+  .student-strip .strip-name{font-size:15px; text-decoration:underline;}
+
+  /* Tab bar */
+  .tab-bar{
+    border:1px solid var(--line-dark);
+    border-radius:22px;
+    display:flex;
+    gap:8px;
+    padding:6px;
+    margin-bottom:20px;
+    width:fit-content;
+  }
+  .tab{
+    border:1px solid var(--line-dark);
+    border-radius:16px;
+    padding:7px 16px;
+    font-size:12.5px;
+    white-space:nowrap;
+    background:#fff;
+    cursor:pointer;
+    font-family:inherit;
+    color:var(--text);
+  }
+  .tab.active{
+    background:#EAEAEA;
+  }
+  .tab:hover{background:#F3F3F3;}
+  .tab.active:hover{background:#EAEAEA;}
+
+  /* Dropdown "custom" tab */
+  .dropdown-tab{position:relative;}
+  .dropdown-menu{
+    position:absolute;
+    top:calc(100% + 6px);
+    left:0;
+    border:1px solid var(--line-dark);
+    background:#fff;
+    min-width:190px;
+    display:none;
+    z-index:10;
+  }
+  .dropdown-menu.open{display:block;}
+  .dropdown-option{
+    padding:10px 14px;
+    font-size:12.5px;
+    cursor:pointer;
+    border-bottom:1px dashed var(--line);
+  }
+  .dropdown-option:last-child{border-bottom:none;}
+  .dropdown-option:hover{background:#F3F3F3;}
+  .dropdown-option.selected{background:#EAEAEA;}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  /* Shared box styles */
+  .box{
+    border:1px solid var(--line-dark);
+    padding:24px;
+  }
+
+  /* Overview */
+  .profile-head{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:20px;
+  }
+  .avatar-circle{
+    width:44px; height:44px;
+    border:1px solid var(--line-dark);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:10px;
+    color:var(--line);
+    flex-shrink:0;
+  }
+  .profile-head .name{
+    font-size:16px;
+    text-decoration:underline;
+  }
+  .field-row{
+    display:flex;
+    gap:28px;
+    font-size:13px;
+    margin-bottom:10px;
+    flex-wrap:wrap;
+  }
+  .field-row span{color:var(--line);}
+  .divider{
+    border:none;
+    border-top:1px solid var(--line-dark);
+    margin:16px 0 20px;
+  }
+  .status-row{display:flex; gap:14px; margin-bottom:28px;}
+  .status-box{
+    border:1px solid var(--line-dark);
+    height:44px; flex:1;
+    display:flex; align-items:center; gap:8px;
+    padding:0 14px; font-size:12.5px;
+  }
+  .check-circle{
+    width:16px; height:16px;
+    border:1px solid var(--line-dark);
+    border-radius:50%;
+    flex-shrink:0;
+  }
+  .footer-actions{display:flex; justify-content:flex-end; gap:10px;}
+  .btn{
+    border:1px solid var(--line-dark);
+    background:#fff;
+    padding:9px 16px;
+    font-size:13px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .btn:hover{background:#F3F3F3;}
+
+  /* Section title used inside panels */
+  .section-title{
+    font-size:14px;
+    margin-bottom:14px;
+  }
+  .section-title span{
+    color:var(--line);
+    font-size:11.5px;
+    margin-left:8px;
+  }
+
+  /* Documents tab */
+  .doc-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 0;
+    font-size:13px;
+  }
+  .doc-row + .doc-row{border-top:1px dashed var(--line);}
+  .doc-row .doc-status{
+    display:flex; align-items:center; gap:8px;
+    font-size:11.5px;
+    color:var(--line);
+  }
+
+  /* Journal tab */
+  .section-title-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .pill-group{display:flex; gap:8px;}
+  .pill-stat{
+    border:1px solid var(--line-dark);
+    border-radius:12px;
+    padding:4px 12px;
+    font-size:11px;
+    white-space:nowrap;
+  }
+  .pill-stat.good{background:#F5F5F5;}
+  .pill-stat.infraction{background:#EAEAEA;}
+
+  /* Reusable dropdown attached to a button (not just the tab bar) */
+  .dropdown-wrap{position:relative;}
+
+  .journal-entry{
+    padding:12px 0;
+    font-size:13px;
+  }
+  .journal-entry + .journal-entry{border-top:1px dashed var(--line);}
+  .journal-meta{
+    display:flex;
+    gap:12px;
+    font-size:11.5px;
+    color:var(--line);
+    margin-bottom:4px;
+  }
+  .tag-box{
+    border:1px solid var(--line-dark);
+    border-radius:10px;
+    padding:1px 9px;
+    font-size:10.5px;
+  }
+
+  /* Billing tab */
+  .billing-summary{
+    display:flex;
+    gap:14px;
+    margin-bottom:22px;
+  }
+  .summary-box{
+    border:1px solid var(--line-dark);
+    flex:1;
+    padding:14px;
+  }
+  .summary-box .label{font-size:11px; color:var(--line); margin-bottom:6px;}
+  .summary-box .value{font-size:16px;}
+  table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  th, td{
+    border:1px solid var(--line-dark);
+    padding:8px 10px;
+    text-align:left;
+    font-weight:normal;
+  }
+  th{background:#EAEAEA;}
+
+  /* Schedule & Attendance tab */
+  .attendance-summary{
+    display:flex;
+    gap:14px;
+    margin-bottom:22px;
+  }
+  .sched-grid{
+    display:grid;
+    grid-template-columns:80px repeat(5, 1fr);
+    border:1px solid var(--line-dark);
+  }
+  .sched-cell{
+    border:1px solid var(--line);
+    padding:10px 8px;
+    font-size:11.5px;
+    min-height:44px;
+  }
+  .sched-head{
+    background:#EAEAEA;
+    text-align:center;
+    font-size:11.5px;
+  }
+
+  /* Contact tab */
+  .parent-card{
+    border:1px solid var(--line-dark);
+    padding:16px;
+    margin-bottom:14px;
+  }
+  .parent-title{
+    font-size:13px;
+    text-decoration:underline;
+    margin-bottom:12px;
+  }
+  .parent-fields{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+    font-size:12.5px;
+  }
+  .parent-fields span{color:var(--line);}
+
+  .emergency-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:11px 0;
+    font-size:13px;
+  }
+  .emergency-row + .emergency-row{border-top:1px dashed var(--line);}
+  .emergency-meta{font-size:11.5px; color:var(--line);}
+
+  .contact-dash{
+    border:1px solid var(--line-dark);
+    padding:18px;
+  }
+  .dash-row{
+    display:flex;
+    gap:12px;
+    margin-bottom:12px;
+    flex-wrap:wrap;
+  }
+  .dash-select{
+    border:1px solid var(--line-dark);
+    padding:9px 12px;
+    font-size:12.5px;
+    flex:1;
+    min-width:180px;
+    font-family:inherit;
+    background:#fff;
+    color:var(--text);
+  }
+  .method-toggle{display:flex; gap:8px;}
+  .method-btn{
+    border:1px solid var(--line-dark);
+    padding:9px 16px;
+    font-size:12.5px;
+    cursor:pointer;
+    background:#fff;
+    font-family:inherit;
+  }
+  .method-btn.active{background:#EAEAEA;}
+  .message-box{
+    border:1px solid var(--line-dark);
+    min-height:70px;
+    padding:10px 12px;
+    font-size:12.5px;
+    color:var(--line);
+    margin-bottom:14px;
+  }
+
+  /* Student History tab — timeline */
+  .timeline{position:relative; padding-left:26px;}
+  .timeline::before{
+    content:'';
+    position:absolute;
+    left:5px; top:4px; bottom:4px;
+    border-left:1px solid var(--line-dark);
+  }
+  .timeline-item{position:relative; padding-bottom:22px;}
+  .timeline-item:last-child{padding-bottom:0;}
+  .timeline-item::before{
+    content:'';
+    position:absolute;
+    left:-26px; top:2px;
+    width:10px; height:10px;
+    border:1px solid var(--line-dark);
+    border-radius:50%;
+    background:#fff;
+  }
+  .timeline-time{font-size:11px; color:var(--line); margin-bottom:3px;}
+  .timeline-time span{border:1px solid var(--line); border-radius:9px; padding:1px 8px; margin-left:8px; font-size:10px;}
+  .timeline-desc{font-size:13px; margin-bottom:2px;}
+  .timeline-actor{font-size:11.5px; color:var(--line);}
+
+  /* Milestones tab */
+  .goal-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    padding:12px 0;
+    font-size:13px;
+  }
+  .goal-row + .goal-row{border-top:1px dashed var(--line);}
+  .goal-meta{display:flex; align-items:center; gap:14px;}
+  .progress-track{
+    border:1px solid var(--line-dark);
+    height:10px;
+    width:140px;
+    position:relative;
+    flex-shrink:0;
+  }
+  .progress-fill{
+    position:absolute; left:0; top:0; bottom:0;
+    background:#EAEAEA;
+    border-right:1px solid var(--line-dark);
+  }
+  .status-pill{
+    border:1px solid var(--line-dark);
+    border-radius:10px;
+    padding:2px 10px;
+    font-size:11px;
+    white-space:nowrap;
+  }
+
+  .pathway-track{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:8px;
+  }
+  .pathway-step{
+    border:1px solid var(--line-dark);
+    padding:9px 14px;
+    font-size:12px;
+  }
+  .pathway-step.current{background:#EAEAEA;}
+  .pathway-arrow{color:var(--line); font-size:14px;}
+
+  .annotation{
+    font-size:11px;
+    color:#999;
+    font-style:italic;
+    margin-top:14px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <div class="nav-icon"></div>
+    <div class="nav-icon"></div>
+    <div class="nav-icon"></div>
+  </div>
+
+  <div class="main">
+
+    <div class="header">
+      <h1>Welcome</h1>
+      <div class="search-pill"></div>
+    </div>
+
+    <div class="content">
+
+      <!-- Persistent across all tabs -->
+      <div class="student-strip">
+        <div class="avatar-circle">photo</div>
+        <div class="strip-item">
+          <div class="strip-label">Student</div>
+          <div class="strip-value strip-name">Sarkis Ablabutyan</div>
+        </div>
+        <div class="strip-item">
+          <div class="strip-label">Student ID#</div>
+          <div class="strip-value">100234</div>
+        </div>
+        <div class="strip-item">
+          <div class="strip-label">Primary Parent Contact</div>
+          <div class="strip-value">Anahit Ablabutyan &nbsp;·&nbsp; 818-416-2307 &nbsp;/&nbsp; email@gmail.com</div>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="tab-bar" id="tabBar">
+        <button class="tab active" data-tab="overview">Overview</button>
+        <button class="tab" data-tab="documents">Documents</button>
+        <button class="tab" data-tab="contact">Contact</button>
+        <button class="tab" data-tab="journal">Journal</button>
+        <button class="tab" data-tab="billing">Billing</button>
+        <button class="tab" data-tab="schedule">Schedule &amp; Attendance</button>
+        <div class="dropdown-tab">
+          <button class="tab" id="dropdownToggle">More ▾</button>
+          <div class="dropdown-menu" id="dropdownMenu">
+            <div class="dropdown-option" data-panel="history">Student History</div>
+            <div class="dropdown-option" data-panel="milestones">Milestones</div>
+            <div class="dropdown-option" data-panel="assignments">Assignments</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OVERVIEW -->
+      <div class="panel active box" id="panel-overview">
+        <div class="profile-head">
+          <div class="avatar-circle">photo</div>
+          <div class="name">Sarkis Ablabutyan</div>
+        </div>
+        <div class="field-row">
+          <div><span>First name:</span> Sarkis</div>
+          <div><span>Last name:</span> Ablabutyan</div>
+          <div><span>Student ID#:</span> 100234</div>
+          <div><span>Parent/Guardian:</span> Anahit Ablabutyan</div>
+          <div><span>Parent Phone &amp; Email:</span> 818-416-2307 &nbsp;/&nbsp; email@gmail.com</div>
+        </div>
+        <div class="field-row">
+          <div><span>Gender:</span> Male</div>
+          <div><span>Birthdate:</span> 03/12/2020</div>
+          <div><span>Ethnicity:</span> Armenian</div>
+          <div><span>Enrollment Date:</span> 08/18/2025</div>
+        </div>
+        <hr class="divider">
+        <div class="status-row">
+          <div class="status-box"><span class="check-circle"></span> Doc Compliant</div>
+          <div class="status-box"><span class="check-circle"></span> Good Standing</div>
+          <div class="status-box"><span class="check-circle"></span> Billing Current</div>
+        </div>
+        <div class="footer-actions">
+          <button class="btn">Download Reports</button>
+        </div>
+      </div>
+
+      <!-- DOCUMENTS -->
+      <div class="panel box" id="panel-documents">
+        <div class="section-title">Compliance Documents <span>7 of 7 on file</span></div>
+        <div class="doc-row">
+          <div>Birth Certificate</div>
+          <div class="doc-status"><span class="check-circle"></span> On file — uploaded 08/12/2025</div>
+        </div>
+        <div class="doc-row">
+          <div>Immunization Record</div>
+          <div class="doc-status"><span class="check-circle"></span> On file — uploaded 08/12/2025</div>
+        </div>
+        <div class="doc-row">
+          <div>Parent ID</div>
+          <div class="doc-status"><span class="check-circle"></span> On file — uploaded 08/14/2025</div>
+        </div>
+        <div class="doc-row">
+          <div>Vaccination Card</div>
+          <div class="doc-status"><span class="check-circle"></span> On file — uploaded 08/14/2025</div>
+        </div>
+        <div class="doc-row">
+          <div>Proof of Residency</div>
+          <div class="doc-status"><span class="check-circle"></span> On file — uploaded 08/15/2025</div>
+        </div>
+        <div class="doc-row">
+          <div>Physical Exam Form</div>
+          <div class="doc-status"><span class="check-circle"></span> On file — uploaded 08/16/2025</div>
+        </div>
+        <div class="doc-row">
+          <div>504 Plan</div>
+          <div class="doc-status"><span class="check-circle"></span> On file — uploaded 02/03/2026</div>
+        </div>
+        <div class="footer-actions" style="margin-top:20px;">
+          <button class="btn">Upload Document</button>
+        </div>
+      </div>
+
+      <!-- CONTACT -->
+      <div class="panel box" id="panel-contact">
+        <div class="section-title">Parents / Guardians</div>
+
+        <div class="parent-card">
+          <div class="parent-title">Parent/Guardian #1 — Primary</div>
+          <div class="parent-fields">
+            <div><span>Name:</span> Anahit Ablabutyan</div>
+            <div><span>Relationship:</span> Mother</div>
+            <div><span>Phone:</span> 818-416-2307</div>
+            <div><span>Email:</span> email@gmail.com</div>
+            <div><span>Address:</span> 9421 Winnetka Ave, Chatsworth, CA 91311</div>
+            <div><span>Preferred Contact:</span> Email</div>
+          </div>
+        </div>
+
+        <div class="parent-card">
+          <div class="parent-title">Parent/Guardian #2</div>
+          <div class="parent-fields">
+            <div><span>Name:</span> Karen Ablabutyan</div>
+            <div><span>Relationship:</span> Father</div>
+            <div><span>Phone:</span> 818-555-0199</div>
+            <div><span>Email:</span> karen.ablabutyan@gmail.com</div>
+            <div><span>Address:</span> 9421 Winnetka Ave, Chatsworth, CA 91311</div>
+            <div><span>Preferred Contact:</span> Text</div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="section-title">Emergency Contacts <span>3 of 5 added</span></div>
+        <div class="emergency-row">
+          <div>Silva Grigoryan</div>
+          <div class="emergency-meta">Aunt &nbsp;·&nbsp; 818-555-0234</div>
+        </div>
+        <div class="emergency-row">
+          <div>Knar Sargsyan</div>
+          <div class="emergency-meta">Grandmother &nbsp;·&nbsp; 818-555-0678</div>
+        </div>
+        <div class="emergency-row">
+          <div>Armen Petrosyan</div>
+          <div class="emergency-meta">Family Friend &nbsp;·&nbsp; 818-555-0456</div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="section-title">Quick Send <span>message a contact directly</span></div>
+        <div class="contact-dash">
+          <div class="dash-row">
+            <select class="dash-select">
+              <option>Anahit Ablabutyan (Mother — Primary)</option>
+              <option>Karen Ablabutyan (Father)</option>
+              <option>Silva Grigoryan (Aunt — Emergency)</option>
+              <option>Knar Sargsyan (Grandmother — Emergency)</option>
+              <option>Armen Petrosyan (Family Friend — Emergency)</option>
+            </select>
+            <div class="method-toggle">
+              <button class="method-btn active" data-method="email">Email</button>
+              <button class="method-btn" data-method="text">Text</button>
+            </div>
+          </div>
+          <div class="message-box">Type a message...</div>
+          <div class="footer-actions">
+            <button class="btn">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- JOURNAL -->
+      <div class="panel box" id="panel-journal">
+        <div class="section-title-row">
+          <div class="section-title" style="margin-bottom:0;">Daily Journal <span>3 entries this month</span></div>
+          <div class="pill-group">
+            <div class="pill-stat good">Good Behavior — 1</div>
+            <div class="pill-stat infraction">Infractions — 1</div>
+          </div>
+        </div>
+        <div class="journal-entry">
+          <div class="journal-meta"><span>08/04/2026</span><span class="tag-box">Academic</span></div>
+          <div>Completed reading assessment — reading above grade level, moved up a group.</div>
+        </div>
+        <div class="journal-entry">
+          <div class="journal-meta"><span>07/28/2026</span><span class="tag-box">Positive</span></div>
+          <div>Helped a classmate clean up after art time without being asked.</div>
+        </div>
+        <div class="journal-entry">
+          <div class="journal-meta"><span>07/21/2026</span><span class="tag-box">Behavior</span></div>
+          <div>Had difficulty sharing materials during group activity — redirected calmly.</div>
+        </div>
+        <div class="footer-actions" style="margin-top:20px;">
+          <div class="dropdown-wrap">
+            <button class="btn" id="journalDownloadToggle">Download / Print ▾</button>
+            <div class="dropdown-menu" id="journalDownloadMenu">
+              <div class="dropdown-option">Download — All Entries</div>
+              <div class="dropdown-option">Download — Good Behavior Only</div>
+              <div class="dropdown-option">Download — Infractions Only</div>
+              <div class="dropdown-option">Print — All Entries</div>
+              <div class="dropdown-option">Print — Good Behavior Only</div>
+              <div class="dropdown-option">Print — Infractions Only</div>
+            </div>
+          </div>
+          <button class="btn">Add Journal Entry</button>
+        </div>
+      </div>
+
+      <!-- BILLING -->
+      <div class="panel box" id="panel-billing">
+        <div class="section-title">Billing</div>
+        <div class="billing-summary">
+          <div class="summary-box">
+            <div class="label">Tuition Plan</div>
+            <div class="value">Monthly — $1,200/mo</div>
+          </div>
+          <div class="summary-box">
+            <div class="label">Balance Due</div>
+            <div class="value">$0.00</div>
+          </div>
+          <div class="summary-box">
+            <div class="label">Next Payment</div>
+            <div class="value">09/01/2026</div>
+          </div>
+        </div>
+        <table>
+          <tr><th>Date</th><th>Description</th><th>Amount</th><th>Status</th></tr>
+          <tr><td>08/01/2026</td><td>Monthly Tuition</td><td>$1,200.00</td><td>Paid</td></tr>
+          <tr><td>07/01/2026</td><td>Monthly Tuition</td><td>$1,200.00</td><td>Paid</td></tr>
+          <tr><td>06/01/2026</td><td>Monthly Tuition</td><td>$1,200.00</td><td>Paid</td></tr>
+        </table>
+        <div class="footer-actions" style="margin-top:20px;">
+          <button class="btn">Download Invoice</button>
+        </div>
+      </div>
+
+      <!-- SCHEDULE & ATTENDANCE -->
+      <div class="panel box" id="panel-schedule">
+        <div class="section-title">Attendance Summary</div>
+        <div class="attendance-summary">
+          <div class="summary-box"><div class="label">Present (MTD)</div><div class="value">18 days</div></div>
+          <div class="summary-box"><div class="label">Absent (MTD)</div><div class="value">1 day</div></div>
+          <div class="summary-box"><div class="label">Tardy (MTD)</div><div class="value">2 days</div></div>
+          <div class="summary-box"><div class="label">Attendance Rate</div><div class="value">94%</div></div>
+        </div>
+
+        <div class="section-title">Weekly Schedule</div>
+        <div class="sched-grid">
+          <div class="sched-cell sched-head"></div>
+          <div class="sched-cell sched-head">Mon</div>
+          <div class="sched-cell sched-head">Tue</div>
+          <div class="sched-cell sched-head">Wed</div>
+          <div class="sched-cell sched-head">Thu</div>
+          <div class="sched-cell sched-head">Fri</div>
+
+          <div class="sched-cell sched-head">8:30</div>
+          <div class="sched-cell">Homeroom</div>
+          <div class="sched-cell">Homeroom</div>
+          <div class="sched-cell">Homeroom</div>
+          <div class="sched-cell">Homeroom</div>
+          <div class="sched-cell">Homeroom</div>
+
+          <div class="sched-cell sched-head">9:15</div>
+          <div class="sched-cell">Reading</div>
+          <div class="sched-cell">Math</div>
+          <div class="sched-cell">Reading</div>
+          <div class="sched-cell">Math</div>
+          <div class="sched-cell">Reading</div>
+
+          <div class="sched-cell sched-head">10:30</div>
+          <div class="sched-cell">Art</div>
+          <div class="sched-cell">P.E.</div>
+          <div class="sched-cell">Art</div>
+          <div class="sched-cell">P.E.</div>
+          <div class="sched-cell">Music</div>
+        </div>
+      </div>
+
+      <!-- STUDENT HISTORY (dropdown option) -->
+      <div class="panel box" id="panel-history">
+        <div class="section-title">Student History <span>full activity timeline</span></div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-time">08/04/2026 9:12 AM <span>Journal</span></div>
+            <div class="timeline-desc">Journal entry added — "Academic" category</div>
+            <div class="timeline-actor">By Ms. Torosyan (Teacher)</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">08/03/2026 4:47 PM <span>Email</span></div>
+            <div class="timeline-desc">Email "August Newsletter" opened by recipient</div>
+            <div class="timeline-actor">Parent — email@gmail.com</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">08/03/2026 2:10 PM <span>Email</span></div>
+            <div class="timeline-desc">Email "August Newsletter" sent</div>
+            <div class="timeline-actor">Sent by Front Office</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">07/30/2026 11:00 AM <span>Meeting</span></div>
+            <div class="timeline-desc">Meeting scheduled — Parent-Teacher Conference, 08/10/2026 3:00 PM</div>
+            <div class="timeline-actor">By N. Sargsyan (Counselor)</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">07/22/2026 1:30 PM <span>Meeting</span></div>
+            <div class="timeline-desc">Meeting canceled — 504 Review (rescheduling requested by parent)</div>
+            <div class="timeline-actor">By N. Sargsyan (Counselor)</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">07/18/2026 10:05 AM <span>Schedule</span></div>
+            <div class="timeline-desc">Schedule change — moved to Ms. Torosyan's Reading group</div>
+            <div class="timeline-actor">By N. Sargsyan (Counselor)</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">07/10/2026 8:50 AM <span>Attendance</span></div>
+            <div class="timeline-desc">Attendance record corrected — 07/09/2026 Tardy → Present</div>
+            <div class="timeline-actor">By Front Office</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">08/14/2025 1:15 PM <span>Document</span></div>
+            <div class="timeline-desc">Document uploaded — Vaccination Card</div>
+            <div class="timeline-actor">By Admin</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">08/12/2025 9:30 AM <span>Document</span></div>
+            <div class="timeline-desc">Documents uploaded — Birth Certificate, Immunization Record</div>
+            <div class="timeline-actor">By Admin</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">08/18/2025 8:00 AM <span>Profile</span></div>
+            <div class="timeline-desc">Student profile created (Full Profile)</div>
+            <div class="timeline-actor">By Admin</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MILESTONES (dropdown option) -->
+      <div class="panel box" id="panel-milestones">
+        <div class="section-title">Goals &amp; Tracking</div>
+        <div class="goal-row">
+          <div>Improve reading fluency to grade level</div>
+          <div class="goal-meta">
+            <div class="progress-track"><div class="progress-fill" style="width:70%;"></div></div>
+            <div class="status-pill">On Track</div>
+          </div>
+        </div>
+        <div class="goal-row">
+          <div>Build number sense to 100</div>
+          <div class="goal-meta">
+            <div class="progress-track"><div class="progress-fill" style="width:40%;"></div></div>
+            <div class="status-pill">At Risk</div>
+          </div>
+        </div>
+        <div class="goal-row">
+          <div>Complete Level 2 chess curriculum</div>
+          <div class="goal-meta">
+            <div class="progress-track"><div class="progress-fill" style="width:100%;"></div></div>
+            <div class="status-pill">Completed</div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="section-title">Course Pathway <span>program of study</span></div>
+        <div class="pathway-track">
+          <div class="pathway-step">Pre-K</div>
+          <div class="pathway-arrow">→</div>
+          <div class="pathway-step">Kindergarten</div>
+          <div class="pathway-arrow">→</div>
+          <div class="pathway-step current">Grade 1 (current)</div>
+          <div class="pathway-arrow">→</div>
+          <div class="pathway-step">Grade 2</div>
+          <div class="pathway-arrow">→</div>
+          <div class="pathway-step">Grade 3</div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="section-title">Credits &amp; Graduation Requirements <span>tracks starting secondary grades</span></div>
+        <table>
+          <tr><th>Requirement</th><th>Credits Required</th><th>Credits Earned</th><th>Status</th></tr>
+          <tr><td>English</td><td>40</td><td>0</td><td>Not started — elementary grade</td></tr>
+          <tr><td>Math</td><td>30</td><td>0</td><td>Not started — elementary grade</td></tr>
+          <tr><td>Science</td><td>30</td><td>0</td><td>Not started — elementary grade</td></tr>
+          <tr><td>Elective</td><td>20</td><td>0</td><td>Not started — elementary grade</td></tr>
+        </table>
+      </div>
+
+      <!-- ASSIGNMENTS (dropdown option) -->
+      <div class="panel box" id="panel-assignments">
+        <div class="section-title">Assignments <span>compiled from teacher gradebooks</span></div>
+        <table>
+          <tr><th>Subject</th><th>Assignment</th><th>Due Date</th><th>Status</th><th>Grade</th></tr>
+          <tr><td>Reading</td><td>Chapter 3 Worksheet</td><td>08/06/2026</td><td>Graded</td><td>95%</td></tr>
+          <tr><td>Math</td><td>Addition Practice Set 4</td><td>08/05/2026</td><td>Missing</td><td>—</td></tr>
+          <tr><td>Art</td><td>Self Portrait Project</td><td>08/07/2026</td><td>Submitted</td><td>Pending</td></tr>
+          <tr><td>Reading</td><td>Vocabulary Quiz</td><td>07/30/2026</td><td>Graded</td><td>88%</td></tr>
+          <tr><td>Math</td><td>Number Line Activity</td><td>07/28/2026</td><td>Graded</td><td>100%</td></tr>
+        </table>
+        <div class="footer-actions" style="margin-top:20px;">
+          <button class="btn">Print Transcript</button>
+        </div>
+      </div>
+
+      <div class="annotation" id="footNote">
+        Placeholder content throughout — filled in so you can see the shape of each tab; swap for real Supabase data once wired up.
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const panels = document.querySelectorAll('.panel');
+    const mainTabs = document.querySelectorAll('.tab-bar > .tab[data-tab]');
+    const dropdownToggle = document.getElementById('dropdownToggle');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    const dropdownOptions = document.querySelectorAll('.dropdown-option');
+
+    function activatePanel(panelId){
+      panels.forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + panelId).classList.add('active');
+    }
+
+    function clearActiveStates(){
+      mainTabs.forEach(t => t.classList.remove('active'));
+      dropdownToggle.classList.remove('active');
+      dropdownOptions.forEach(o => o.classList.remove('selected'));
+    }
+
+    // Regular tabs
+    mainTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        clearActiveStates();
+        tab.classList.add('active');
+        dropdownToggle.textContent = 'More ▾';
+        dropdownMenu.classList.remove('open');
+        activatePanel(tab.dataset.tab);
+      });
+    });
+
+    // Dropdown toggle — just opens/closes the menu
+    dropdownToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdownMenu.classList.toggle('open');
+    });
+
+    // Dropdown options — select and activate
+    dropdownOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        clearActiveStates();
+        dropdownToggle.classList.add('active');
+        option.classList.add('selected');
+        dropdownToggle.textContent = option.textContent + ' ▾';
+        dropdownMenu.classList.remove('open');
+        activatePanel(option.dataset.panel);
+      });
+    });
+
+    // Close dropdown when clicking outside of it
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.dropdown-tab') && !e.target.closest('.dropdown-wrap')) {
+        dropdownMenu.classList.remove('open');
+        journalDownloadMenu.classList.remove('open');
+      }
+    });
+
+    // Journal Download / Print dropdown
+    const journalDownloadToggle = document.getElementById('journalDownloadToggle');
+    const journalDownloadMenu = document.getElementById('journalDownloadMenu');
+    journalDownloadToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      journalDownloadMenu.classList.toggle('open');
+    });
+    journalDownloadMenu.querySelectorAll('.dropdown-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        journalDownloadMenu.classList.remove('open');
+      });
+    });
+
+    // Quick Send method toggle (Email / Text)
+    document.querySelectorAll('.method-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.parentElement.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+  </script>
+
+</body>
+</html>

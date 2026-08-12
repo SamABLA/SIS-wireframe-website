@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Students Dashboard — Wireframe</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root{
+    --line:#8A8A8A;
+    --line-dark:#333;
+    --gray-fill:#D9D9D9;
+    --gray-fill-2:#EAEAEA;
+    --text:#333;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family: Helvetica, Arial, sans-serif;
+    color:var(--text);
+    background:#fff;
+    display:flex;
+    min-height:100vh;
+  }
+
+  /* everything drawn with plain boxes / borders, no color, no shadows, no radius */
+
+  .sidebar{
+    width:200px;
+    border-right:1px solid var(--line-dark);
+    padding:20px 16px;
+    flex-shrink:0;
+  }
+  .nav-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 0;
+    font-size:14px;
+  }
+  .nav-item .radio{
+    width:12px; height:12px;
+    border:1px solid var(--line-dark);
+    border-radius:50%;
+    flex-shrink:0;
+  }
+
+  .main{flex:1; display:flex; flex-direction:column;}
+
+  /* Banner block */
+  .banner{
+    border-bottom:1px solid var(--line-dark);
+    padding:24px 32px;
+  }
+  .banner h1{
+    font-size:20px;
+    font-weight:normal;
+    margin-bottom:6px;
+  }
+  .banner .datetime{
+    font-size:13px;
+    color:var(--line);
+    margin-bottom:18px;
+  }
+  .placeholder-input{
+    border:1px solid var(--line-dark);
+    padding:10px 14px;
+    font-size:13px;
+    color:var(--line);
+    max-width:480px;
+  }
+
+  .content{padding:24px 32px;}
+
+  .content-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .content-header h2{
+    font-size:16px;
+    font-weight:normal;
+    text-decoration:underline;
+  }
+  .btn{
+    border:1px solid var(--line-dark);
+    background:#fff;
+    padding:8px 14px;
+    font-size:13px;
+    cursor:pointer;
+  }
+
+  .toolbar{
+    display:flex;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .toolbar .placeholder-input{padding:8px 12px; font-size:13px;}
+
+  .divider{
+    border:none;
+    border-top:1px solid var(--line-dark);
+    margin-bottom:18px;
+  }
+
+  /* grouped row block — plain bracket/border like the circled pair in the sketch */
+  .group-box{
+    border:1px solid var(--line-dark);
+    padding:2px;
+    margin-bottom:16px;
+  }
+  .row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:12px 14px;
+    font-size:13px;
+  }
+  .row + .row{
+    border-top:1px dashed var(--line);
+  }
+  .row .avatar-box{
+    width:28px; height:28px;
+    border:1px solid var(--line-dark);
+    flex-shrink:0;
+  }
+  .row .label{
+    color:var(--line);
+    font-size:11px;
+  }
+
+  .annotation{
+    font-size:11px;
+    color:#999;
+    font-style:italic;
+    margin-top:2px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="nav-item"><span class="radio"></span> Students</div>
+    <div class="nav-item"><span class="radio"></span> Staff</div>
+    <div class="nav-item"><span class="radio"></span> Communication</div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Banner -->
+    <div class="banner">
+      <h1>Hello Teacher</h1>
+      <div class="datetime">Wed, Aug 5th 2026&nbsp;&nbsp;&nbsp;3:44pm</div>
+      <div class="placeholder-input">Copilot can do anything</div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="content-header">
+        <h2>Students</h2>
+        <button class="btn">Add Student</button>
+      </div>
+
+      <div class="toolbar">
+        <div class="placeholder-input">Search Student</div>
+        <div class="placeholder-input">Filter by ▾</div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- grouped pair, mirrors the circled rows in the sketch -->
+      <div class="group-box">
+        <div class="row">
+          <div class="avatar-box"></div>
+          <div>Sarkis Ablabutyan &nbsp;·&nbsp; Grade 2 &nbsp;·&nbsp; ID# 100234 &nbsp;·&nbsp; 818-416-2307 &nbsp;·&nbsp; email@gmail.com</div>
+        </div>
+        <div class="row">
+          <div class="avatar-box"></div>
+          <div>Vahagn Ablabutyan &nbsp;·&nbsp; Grade 1 &nbsp;·&nbsp; ID# 100235 &nbsp;·&nbsp; 818-696-5555 &nbsp;·&nbsp; email@yahoo.com</div>
+        </div>
+      </div>
+      <div class="annotation">↑ grouped box = the pair you circled together</div>
+
+    </div>
+  </div>
+
+</body>
+</html>
