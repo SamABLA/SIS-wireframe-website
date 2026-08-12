@@ -114,7 +114,11 @@
     gap:14px;
     padding:12px 14px;
     font-size:13px;
+    color:inherit;
+    text-decoration:none;
+    cursor:pointer;
   }
+  .row:hover{background:var(--gray-fill-2);}
   .row + .row{
     border-top:1px dashed var(--line);
   }
@@ -171,16 +175,16 @@
 
       <!-- grouped pair, mirrors the circled rows in the sketch -->
       <div class="group-box">
-        <div class="row">
+        <a class="row" href="student-profile-wireframe-interactive.html">
           <div class="avatar-box"></div>
           <div>Sarkis Ablabutyan &nbsp;·&nbsp; Grade 2 &nbsp;·&nbsp; ID# 100234 &nbsp;·&nbsp; 818-416-2307 &nbsp;·&nbsp; email@gmail.com</div>
-        </div>
-        <div class="row">
+        </a>
+        <a class="row" href="student-profile-wireframe-interactive.html">
           <div class="avatar-box"></div>
           <div>Vahagn Ablabutyan &nbsp;·&nbsp; Grade 1 &nbsp;·&nbsp; ID# 100235 &nbsp;·&nbsp; 818-696-5555 &nbsp;·&nbsp; email@yahoo.com</div>
-        </div>
+        </a>
       </div>
-      <div class="annotation">↑ grouped box = the pair you circled together</div>
+      <div class="annotation">↑ grouped box = the pair you circled together · click a row to open the student profile</div>
 
     </div>
   </div>
