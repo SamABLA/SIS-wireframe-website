@@ -218,7 +218,8 @@
     font-size:11px;
   }
   .modal-field textarea,
-  .modal-field select{
+  .modal-field select,
+  .modal-field input{
     width:100%;
     border:1px solid var(--line-dark);
     padding:8px 12px;
@@ -232,6 +233,15 @@
     min-height:72px;
     resize:vertical;
   }
+  .modal-field .field-row{
+    display:flex;
+    gap:10px;
+  }
+  .modal-field .field-row .modal-field{
+    flex:1;
+    margin-bottom:0;
+  }
+  .modal.wide{width:480px;}
   .modal-actions{
     display:flex;
     justify-content:flex-end;
@@ -247,27 +257,6 @@
     font-weight:normal;
   }
   th{background:var(--gray-fill-2);}
-
-  .form-box{
-    border:1px dashed var(--line-dark);
-    padding:16px;
-    margin-bottom:18px;
-  }
-  .form-grid{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-bottom:12px;
-  }
-  .form-field{
-    border:1px solid var(--line-dark);
-    padding:8px 12px;
-    font-size:13px;
-    color:var(--line);
-    min-width:160px;
-    flex:1;
-  }
-  .form-actions{display:flex; justify-content:flex-end; gap:10px;}
 
   .annotation{
     font-size:11px;
@@ -319,7 +308,7 @@
     <div class="content">
       <div class="content-header">
         <h2>Payments</h2>
-        <button class="btn">Record Payment</button>
+        <button type="button" class="btn" id="recordPaymentBtn">Record Payment</button>
       </div>
 
       <div class="toolbar">
@@ -352,21 +341,6 @@
         </div>
         <div class="box-footer">
           <button type="button" class="btn" id="markPaidBtn">Mark as paid</button>
-        </div>
-      </div>
-
-      <div class="section-title">Record a Payment <span>office / front-desk flow</span></div>
-      <div class="form-box">
-        <div class="form-grid">
-          <div class="form-field">Student ▾ &nbsp; Vahagn Ablabutyan</div>
-          <div class="form-field">Amount &nbsp; $1,350.00</div>
-          <div class="form-field">Method ▾ &nbsp; Check</div>
-          <div class="form-field">Date &nbsp; 08/05/2026</div>
-        </div>
-        <div class="form-field" style="margin-bottom:12px; max-width:none;">Note — August tuition + after-school</div>
-        <div class="form-actions">
-          <button class="btn">Cancel</button>
-          <button class="btn">Record Payment</button>
         </div>
       </div>
 
@@ -455,6 +429,49 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="recordPaymentModal" role="dialog" aria-modal="true" aria-labelledby="recordPaymentTitle">
+    <div class="modal wide">
+      <h3 id="recordPaymentTitle">Record a Payment</h3>
+      <div class="modal-summary">Office / front-desk flow</div>
+      <div class="modal-field">
+        <label for="recordStudent">Student</label>
+        <select id="recordStudent">
+          <option>Sarkis Ablabutyan</option>
+          <option selected>Vahagn Ablabutyan</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <div class="field-row">
+          <div class="modal-field">
+            <label for="recordAmount">Amount</label>
+            <input id="recordAmount" type="text" value="$1,350.00">
+          </div>
+          <div class="modal-field">
+            <label for="recordDate">Date</label>
+            <input id="recordDate" type="text" value="08/05/2026">
+          </div>
+        </div>
+      </div>
+      <div class="modal-field">
+        <label for="recordMethod">Method</label>
+        <select id="recordMethod">
+          <option>Cash</option>
+          <option selected>Check</option>
+          <option>Card</option>
+          <option>Bank transfer</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label for="recordNote">Note</label>
+        <textarea id="recordNote" placeholder="Note">August tuition + after-school</textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelRecordBtn">Cancel</button>
+        <button type="button" class="btn" id="confirmRecordBtn">Record Payment</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const overlay = document.getElementById('markPaidModal');
     const markPaidBtn = document.getElementById('markPaidBtn');
@@ -464,6 +481,16 @@
     const methodInput = document.getElementById('payMethod');
     const summaryEl = document.getElementById('markPaidSummary');
 
+    const recordOverlay = document.getElementById('recordPaymentModal');
+    const recordPaymentBtn = document.getElementById('recordPaymentBtn');
+    const cancelRecordBtn = document.getElementById('cancelRecordBtn');
+    const confirmRecordBtn = document.getElementById('confirmRecordBtn');
+    const recordStudent = document.getElementById('recordStudent');
+    const recordAmount = document.getElementById('recordAmount');
+    const recordDate = document.getElementById('recordDate');
+    const recordMethod = document.getElementById('recordMethod');
+    const recordNote = document.getElementById('recordNote');
+
     function unpaidRows() {
       return Array.from(document.querySelectorAll('.group-box .row[data-status]'))
         .filter(row => row.dataset.status !== 'current' && Number(row.dataset.amount) > 0);
@@ -471,6 +498,65 @@
 
     function money(n) {
       return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function parseAmount(value) {
+      const n = parseFloat(String(value).replace(/[^0-9.]/g, ''));
+      return isNaN(n) ? 0 : n;
+    }
+
+    function addTransaction(date, student, description, method, amountLabel, status) {
+      const tbody = document.querySelector('#txnTable tbody');
+      const tr = document.createElement('tr');
+      [date, student, description, method, amountLabel, status].forEach(text => {
+        const td = document.createElement('td');
+        td.textContent = text;
+        tr.appendChild(td);
+      });
+      tbody.insertBefore(tr, tbody.firstChild);
+    }
+
+    function markRowPaid(row, method, paidDate) {
+      const amount = Number(row.dataset.amount);
+      const student = row.dataset.student;
+      const description = row.dataset.description || 'Payment';
+      const tbody = document.querySelector('#txnTable tbody');
+
+      row.dataset.status = 'current';
+      row.dataset.amount = '0';
+      row.querySelector('.row-amount').textContent = '$0.00';
+      const tag = row.querySelector('.status-tag');
+      tag.textContent = 'Current';
+      tag.classList.remove('filled');
+      const meta = row.querySelector('.row-due-meta');
+      if (meta) {
+        meta.textContent = description + ' $1,350.00  ·  Paid ' + paidDate + '  ·  Anahit Ablabutyan';
+      }
+
+      Array.from(tbody.querySelectorAll('tr')).forEach(tr => {
+        const cells = tr.querySelectorAll('td');
+        if (cells.length && cells[1].textContent === student && cells[5].textContent === 'Overdue') {
+          if (method && method !== '—') cells[3].textContent = method;
+          cells[5].textContent = 'Paid';
+        }
+      });
+
+      return { amount, student, description };
+    }
+
+    function refreshTotals() {
+      const due = unpaidRows();
+      const outstanding = due.reduce((sum, row) => sum + Number(row.dataset.amount), 0);
+      const overdue = due
+        .filter(row => row.dataset.status === 'overdue')
+        .reduce((sum, row) => sum + Number(row.dataset.amount), 0);
+      document.getElementById('outstandingValue').textContent = money(outstanding);
+      document.getElementById('overdueValue').textContent = money(overdue);
+      document.getElementById('dueCount').textContent = due.length ? due.length + ' outstanding' : '0 outstanding';
+      if (!due.length) {
+        markPaidBtn.disabled = true;
+        markPaidBtn.textContent = 'Marked as paid';
+      }
     }
 
     function openModal() {
@@ -489,65 +575,75 @@
       overlay.classList.remove('open');
     }
 
-    function recordPayment() {
+    function recordMarkedPayment() {
       const due = unpaidRows();
       if (!due.length) return;
 
       const method = methodInput.value || '—';
       const comment = commentInput.value.trim();
-      const tbody = document.querySelector('#txnTable tbody');
+      let collectedAdd = 0;
 
       due.forEach(row => {
-        const amount = Number(row.dataset.amount);
-        const student = row.dataset.student;
-        const description = row.dataset.description || 'Payment';
-
-        row.dataset.status = 'current';
-        row.dataset.amount = '0';
-        row.querySelector('.row-amount').textContent = '$0.00';
-        const tag = row.querySelector('.status-tag');
-        tag.textContent = 'Current';
-        tag.classList.remove('filled');
-        const meta = row.querySelector('.row-due-meta');
-        if (meta) {
-          meta.textContent = description + ' $1,350.00  ·  Paid 08/05/2026  ·  Anahit Ablabutyan';
-        }
-
-        Array.from(tbody.querySelectorAll('tr')).forEach(tr => {
-          const cells = tr.querySelectorAll('td');
-          if (cells.length && cells[1].textContent === student && cells[5].textContent === 'Overdue') {
-            cells[3].textContent = method === '—' ? cells[3].textContent : method;
-            cells[5].textContent = 'Paid';
-          }
-        });
-
-        const tr = document.createElement('tr');
+        const { amount, student, description } = markRowPaid(row, method, '08/05/2026');
+        collectedAdd += amount;
         const desc = comment ? description + ' — ' + comment : description;
-        ['08/05/2026', student, desc, method, money(amount), 'Paid'].forEach(text => {
-          const td = document.createElement('td');
-          td.textContent = text;
-          tr.appendChild(td);
-        });
-        tbody.insertBefore(tr, tbody.firstChild);
+        addTransaction('08/05/2026', student, desc, method, money(amount), 'Paid');
       });
 
-      document.getElementById('collectedValue').textContent = '$3,750.00';
-      document.getElementById('outstandingValue').textContent = '$0.00';
-      document.getElementById('overdueValue').textContent = '$0.00';
-      document.getElementById('dueCount').textContent = '0 outstanding';
-      markPaidBtn.disabled = true;
-      markPaidBtn.textContent = 'Marked as paid';
+      const collected = parseAmount(document.getElementById('collectedValue').textContent) + collectedAdd;
+      document.getElementById('collectedValue').textContent = money(collected);
+      refreshTotals();
       closeModal();
+    }
+
+    function openRecordModal() {
+      recordOverlay.classList.add('open');
+      recordStudent.focus();
+    }
+
+    function closeRecordModal() {
+      recordOverlay.classList.remove('open');
+    }
+
+    function submitRecordedPayment() {
+      const student = recordStudent.value;
+      const amount = parseAmount(recordAmount.value);
+      const method = recordMethod.value || '—';
+      const date = recordDate.value.trim() || '08/05/2026';
+      const note = recordNote.value.trim();
+      const row = Array.from(document.querySelectorAll('.group-box .row[data-student]'))
+        .find(r => r.dataset.student === student && Number(r.dataset.amount) > 0);
+      const description = note || (row && row.dataset.description) || 'Payment';
+
+      if (row && amount >= Number(row.dataset.amount)) {
+        markRowPaid(row, method, date);
+        refreshTotals();
+      }
+
+      addTransaction(date, student, description, method, money(amount), 'Paid');
+      const collected = parseAmount(document.getElementById('collectedValue').textContent) + amount;
+      document.getElementById('collectedValue').textContent = money(collected);
+      closeRecordModal();
     }
 
     markPaidBtn.addEventListener('click', openModal);
     cancelPaidBtn.addEventListener('click', closeModal);
-    confirmPaidBtn.addEventListener('click', recordPayment);
+    confirmPaidBtn.addEventListener('click', recordMarkedPayment);
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) closeModal();
     });
+
+    recordPaymentBtn.addEventListener('click', openRecordModal);
+    cancelRecordBtn.addEventListener('click', closeRecordModal);
+    confirmRecordBtn.addEventListener('click', submitRecordedPayment);
+    recordOverlay.addEventListener('click', (e) => {
+      if (e.target === recordOverlay) closeRecordModal();
+    });
+
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
+      if (e.key !== 'Escape') return;
+      if (overlay.classList.contains('open')) closeModal();
+      if (recordOverlay.classList.contains('open')) closeRecordModal();
     });
   </script>
 
