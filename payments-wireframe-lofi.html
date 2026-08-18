@@ -78,10 +78,10 @@
     justify-content:space-between;
     margin-bottom:16px;
   }
-  .content-header h2{
-    font-size:16px;
-    font-weight:normal;
-    text-decoration:underline;
+  .content-header .header-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
   }
   .btn{
     border:1px solid var(--line-dark);
@@ -327,6 +327,47 @@
     font-style:italic;
     margin-top:2px;
   }
+
+  .changelog{
+    border:1px solid var(--line-dark);
+    padding:18px 20px;
+    margin-top:32px;
+    font-size:12.5px;
+  }
+  .changelog-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:14px;
+  }
+  .changelog-head h3{
+    font-size:14px;
+    font-weight:normal;
+    text-decoration:underline;
+  }
+  .changelog-ver{
+    border:1px solid var(--line-dark);
+    padding:3px 8px;
+    font-size:11px;
+    white-space:nowrap;
+  }
+  .log-entry + .log-entry{
+    border-top:1px dashed var(--line);
+    margin-top:12px;
+    padding-top:12px;
+  }
+  .log-meta{
+    font-size:11px;
+    color:var(--line);
+    margin-bottom:6px;
+  }
+  .log-entry ul{
+    margin-left:16px;
+  }
+  .log-entry li{
+    margin-bottom:4px;
+  }
 </style>
 </head>
 <body>
@@ -353,7 +394,10 @@
     <div class="content">
       <div class="content-header">
         <h2>Payments</h2>
-        <button type="button" class="btn" id="recordPaymentBtn">Record Payment</button>
+        <div class="header-actions">
+          <span class="changelog-ver">v0.2.0</span>
+          <button type="button" class="btn" id="recordPaymentBtn">Record Payment</button>
+        </div>
       </div>
 
       <div class="toolbar">
@@ -549,6 +593,33 @@
         <div class="section-title" id="detailTitle">Payment</div>
         <div class="detail-panel">
           <div class="detail-grid" id="searchDetailGrid"></div>
+        </div>
+      </div>
+
+      <div class="changelog" id="changelog">
+        <div class="changelog-head">
+          <h3>Changelog — Payments module wireframe</h3>
+          <div class="changelog-ver">Current: v0.2.0</div>
+        </div>
+
+        <div class="log-entry">
+          <div class="log-meta">v0.2.0 &nbsp;·&nbsp; 18 Aug 2026 &nbsp;·&nbsp; search, details, layout</div>
+          <ul>
+            <li>Search Student / Invoice collapses the dashboard; results replace due items and recent transactions.</li>
+            <li>Clicking a student or invoice opens a payment detail view; ← beside the search bar returns to the dashboard.</li>
+            <li>Recent transactions list invoice # and receipt # and open a detail popup.</li>
+            <li>Overview boxes (Collected, Outstanding, Overdue, Next Due Date) sit under the Payments title, below the divider.</li>
+          </ul>
+        </div>
+
+        <div class="log-entry">
+          <div class="log-meta">v0.1.0 &nbsp;·&nbsp; 18 Aug 2026 &nbsp;·&nbsp; first wireframe</div>
+          <ul>
+            <li>First lo-fi Payments desk: sidebar, due &amp; outstanding list, and recent transactions using the Ablabutyan family.</li>
+            <li>Mark as paid at the end of the due box, with an optional comment and payment-method popup.</li>
+            <li>Record Payment moved off the page into a front-desk popup (student, amount, date, method, note).</li>
+            <li>Module added to the site shell and the Students sidebar.</li>
+          </ul>
         </div>
       </div>
 
