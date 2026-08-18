@@ -139,7 +139,7 @@
   .summary-row{
     display:flex;
     gap:12px;
-    margin-top:18px;
+    margin-bottom:16px;
   }
   .summary-box{
     border:1px solid var(--line-dark);
@@ -347,24 +347,6 @@
       <h1>Hello Teacher</h1>
       <div class="datetime">Wed, Aug 5th 2026&nbsp;&nbsp;&nbsp;3:44pm</div>
       <div class="placeholder-input">Copilot can do anything</div>
-      <div class="summary-row">
-        <div class="summary-box">
-          <div class="label">Collected (Aug)</div>
-          <div class="value" id="collectedValue">$2,400.00</div>
-        </div>
-        <div class="summary-box">
-          <div class="label">Outstanding</div>
-          <div class="value" id="outstandingValue">$1,350.00</div>
-        </div>
-        <div class="summary-box">
-          <div class="label">Overdue</div>
-          <div class="value" id="overdueValue">$150.00</div>
-        </div>
-        <div class="summary-box">
-          <div class="label">Next Due Date</div>
-          <div class="value">09/01/2026</div>
-        </div>
-      </div>
     </div>
 
     <!-- Content -->
@@ -384,6 +366,24 @@
       <hr class="divider">
 
       <div id="dashboardView">
+      <div class="summary-row">
+        <div class="summary-box">
+          <div class="label">Collected (Aug)</div>
+          <div class="value" id="collectedValue">$2,400.00</div>
+        </div>
+        <div class="summary-box">
+          <div class="label">Outstanding</div>
+          <div class="value" id="outstandingValue">$1,350.00</div>
+        </div>
+        <div class="summary-box">
+          <div class="label">Overdue</div>
+          <div class="value" id="overdueValue">$150.00</div>
+        </div>
+        <div class="summary-box">
+          <div class="label">Next Due Date</div>
+          <div class="value">09/01/2026</div>
+        </div>
+      </div>
       <div class="section-title">Due &amp; Outstanding <span id="dueCount">2 families</span></div>
       <div class="group-box">
         <div class="row" data-student="Sarkis Ablabutyan" data-amount="0" data-status="current">
