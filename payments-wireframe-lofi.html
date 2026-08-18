@@ -166,6 +166,78 @@
     white-space:nowrap;
   }
   .status-tag.filled{background:var(--gray-fill-2);}
+  .box-footer{
+    border-top:1px solid var(--line-dark);
+    padding:10px 14px;
+    display:flex;
+    justify-content:flex-end;
+  }
+  .box-footer .btn:disabled{
+    color:var(--line);
+    cursor:default;
+  }
+
+  .modal-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(255,255,255,0.82);
+    align-items:center;
+    justify-content:center;
+    z-index:20;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    border:1px solid var(--line-dark);
+    background:#fff;
+    padding:22px 24px;
+    width:420px;
+    max-width:calc(100% - 32px);
+  }
+  .modal h3{
+    font-size:15px;
+    font-weight:normal;
+    text-decoration:underline;
+    margin-bottom:6px;
+  }
+  .modal-summary{
+    font-size:12.5px;
+    color:var(--line);
+    margin-bottom:16px;
+  }
+  .modal-field{
+    margin-bottom:12px;
+  }
+  .modal-field label{
+    display:block;
+    font-size:12px;
+    margin-bottom:6px;
+  }
+  .modal-field label span{
+    color:var(--line);
+    font-size:11px;
+  }
+  .modal-field textarea,
+  .modal-field select{
+    width:100%;
+    border:1px solid var(--line-dark);
+    padding:8px 12px;
+    font-size:13px;
+    font-family:inherit;
+    color:var(--text);
+    background:#fff;
+    border-radius:0;
+  }
+  .modal-field textarea{
+    min-height:72px;
+    resize:vertical;
+  }
+  .modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:16px;
+  }
 
   table{width:100%; border-collapse:collapse; font-size:12.5px; margin-bottom:18px;}
   th, td{
@@ -243,15 +315,15 @@
       <div class="summary-row">
         <div class="summary-box">
           <div class="label">Collected (Aug)</div>
-          <div class="value">$2,400.00</div>
+          <div class="value" id="collectedValue">$2,400.00</div>
         </div>
         <div class="summary-box">
           <div class="label">Outstanding</div>
-          <div class="value">$1,350.00</div>
+          <div class="value" id="outstandingValue">$1,350.00</div>
         </div>
         <div class="summary-box">
           <div class="label">Overdue</div>
-          <div class="value">$150.00</div>
+          <div class="value" id="overdueValue">$150.00</div>
         </div>
         <div class="summary-box">
           <div class="label">Next Due Date</div>
@@ -259,9 +331,9 @@
         </div>
       </div>
 
-      <div class="section-title">Due &amp; Outstanding <span>2 families</span></div>
+      <div class="section-title">Due &amp; Outstanding <span id="dueCount">2 families</span></div>
       <div class="group-box">
-        <div class="row">
+        <div class="row" data-student="Sarkis Ablabutyan" data-amount="0" data-status="current">
           <div class="avatar-box"></div>
           <div class="row-main">
             <div>Sarkis Ablabutyan &nbsp;·&nbsp; Grade 2 &nbsp;·&nbsp; ID# 100234</div>
@@ -270,14 +342,17 @@
           <div class="row-amount">$0.00</div>
           <div class="status-tag">Current</div>
         </div>
-        <div class="row">
+        <div class="row" data-student="Vahagn Ablabutyan" data-amount="1350" data-status="overdue" data-description="Monthly Tuition + After-school">
           <div class="avatar-box"></div>
           <div class="row-main">
             <div>Vahagn Ablabutyan &nbsp;·&nbsp; Grade 1 &nbsp;·&nbsp; ID# 100235</div>
-            <div class="row-meta">Monthly Tuition $1,200.00 + After-school $150.00 &nbsp;·&nbsp; Due 08/01/2026 &nbsp;·&nbsp; Anahit Ablabutyan</div>
+            <div class="row-meta row-due-meta">Monthly Tuition $1,200.00 + After-school $150.00 &nbsp;·&nbsp; Due 08/01/2026 &nbsp;·&nbsp; Anahit Ablabutyan</div>
           </div>
           <div class="row-amount">$1,350.00</div>
           <div class="status-tag filled">Overdue</div>
+        </div>
+        <div class="box-footer">
+          <button type="button" class="btn" id="markPaidBtn">Mark as paid</button>
         </div>
       </div>
 
@@ -297,7 +372,8 @@
       </div>
 
       <div class="section-title">Recent Transactions</div>
-      <table>
+      <table id="txnTable">
+        <thead>
         <tr>
           <th>Date</th>
           <th>Student</th>
@@ -306,6 +382,8 @@
           <th>Amount</th>
           <th>Status</th>
         </tr>
+        </thead>
+        <tbody>
         <tr>
           <td>08/01/2026</td>
           <td>Sarkis Ablabutyan</td>
@@ -346,11 +424,135 @@
           <td>$1,200.00</td>
           <td>Paid</td>
         </tr>
+        </tbody>
       </table>
       <div class="annotation">↑ school-wide payments desk — balances, record payment, recent activity. Student-level billing stays on the profile Billing tab.</div>
 
     </div>
   </div>
+
+  <div class="modal-overlay" id="markPaidModal" role="dialog" aria-modal="true" aria-labelledby="markPaidTitle">
+    <div class="modal">
+      <h3 id="markPaidTitle">Mark as paid</h3>
+      <div class="modal-summary" id="markPaidSummary"></div>
+      <div class="modal-field">
+        <label for="payComment">Comment <span>optional</span></label>
+        <textarea id="payComment" placeholder="Add a comment"></textarea>
+      </div>
+      <div class="modal-field">
+        <label for="payMethod">Method <span>optional</span></label>
+        <select id="payMethod">
+          <option value="">Select method</option>
+          <option>Cash</option>
+          <option>Check</option>
+          <option>Card</option>
+          <option>Bank transfer</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelPaidBtn">Cancel</button>
+        <button type="button" class="btn" id="confirmPaidBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const overlay = document.getElementById('markPaidModal');
+    const markPaidBtn = document.getElementById('markPaidBtn');
+    const cancelPaidBtn = document.getElementById('cancelPaidBtn');
+    const confirmPaidBtn = document.getElementById('confirmPaidBtn');
+    const commentInput = document.getElementById('payComment');
+    const methodInput = document.getElementById('payMethod');
+    const summaryEl = document.getElementById('markPaidSummary');
+
+    function unpaidRows() {
+      return Array.from(document.querySelectorAll('.group-box .row[data-status]'))
+        .filter(row => row.dataset.status !== 'current' && Number(row.dataset.amount) > 0);
+    }
+
+    function money(n) {
+      return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function openModal() {
+      const due = unpaidRows();
+      if (!due.length) return;
+      const total = due.reduce((sum, row) => sum + Number(row.dataset.amount), 0);
+      const names = due.map(row => row.dataset.student).join(', ');
+      summaryEl.textContent = names + '  ·  ' + money(total) + ' outstanding';
+      commentInput.value = '';
+      methodInput.value = '';
+      overlay.classList.add('open');
+      commentInput.focus();
+    }
+
+    function closeModal() {
+      overlay.classList.remove('open');
+    }
+
+    function recordPayment() {
+      const due = unpaidRows();
+      if (!due.length) return;
+
+      const method = methodInput.value || '—';
+      const comment = commentInput.value.trim();
+      const tbody = document.querySelector('#txnTable tbody');
+
+      due.forEach(row => {
+        const amount = Number(row.dataset.amount);
+        const student = row.dataset.student;
+        const description = row.dataset.description || 'Payment';
+
+        row.dataset.status = 'current';
+        row.dataset.amount = '0';
+        row.querySelector('.row-amount').textContent = '$0.00';
+        const tag = row.querySelector('.status-tag');
+        tag.textContent = 'Current';
+        tag.classList.remove('filled');
+        const meta = row.querySelector('.row-due-meta');
+        if (meta) {
+          meta.textContent = description + ' $1,350.00  ·  Paid 08/05/2026  ·  Anahit Ablabutyan';
+        }
+
+        Array.from(tbody.querySelectorAll('tr')).forEach(tr => {
+          const cells = tr.querySelectorAll('td');
+          if (cells.length && cells[1].textContent === student && cells[5].textContent === 'Overdue') {
+            cells[3].textContent = method === '—' ? cells[3].textContent : method;
+            cells[5].textContent = 'Paid';
+          }
+        });
+
+        const tr = document.createElement('tr');
+        const desc = comment ? description + ' — ' + comment : description;
+        tr.innerHTML =
+          '<td>08/05/2026</td>' +
+          '<td>' + student + '</td>' +
+          '<td>' + desc + '</td>' +
+          '<td>' + method + '</td>' +
+          '<td>' + money(amount) + '</td>' +
+          '<td>Paid</td>';
+        tbody.insertBefore(tr, tbody.firstChild);
+      });
+
+      document.getElementById('collectedValue').textContent = '$3,750.00';
+      document.getElementById('outstandingValue').textContent = '$0.00';
+      document.getElementById('overdueValue').textContent = '$0.00';
+      document.getElementById('dueCount').textContent = '0 outstanding';
+      markPaidBtn.disabled = true;
+      markPaidBtn.textContent = 'Marked as paid';
+      closeModal();
+    }
+
+    markPaidBtn.addEventListener('click', openModal);
+    cancelPaidBtn.addEventListener('click', closeModal);
+    confirmPaidBtn.addEventListener('click', recordPayment);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
+    });
+  </script>
 
 </body>
 </html>
