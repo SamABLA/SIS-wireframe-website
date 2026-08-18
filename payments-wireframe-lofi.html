@@ -197,13 +197,13 @@
     white-space:nowrap;
   }
   .status-tag.filled{background:var(--gray-fill-2);}
-  .box-footer{
-    border-top:1px solid var(--line-dark);
-    padding:10px 14px;
-    display:flex;
-    justify-content:flex-end;
+  .mark-paid-btn{
+    font-size:12px;
+    padding:6px 10px;
+    white-space:nowrap;
+    flex-shrink:0;
   }
-  .box-footer .btn:disabled{
+  .mark-paid-btn:disabled{
     color:var(--line);
     cursor:default;
   }
@@ -395,7 +395,7 @@
       <div class="content-header">
         <h2>Payments</h2>
         <div class="header-actions">
-          <span class="changelog-ver">v0.2.0</span>
+          <span class="changelog-ver">v0.2.1</span>
           <button type="button" class="btn" id="recordPaymentBtn">Record Payment</button>
         </div>
       </div>
@@ -428,28 +428,39 @@
           <div class="value">09/01/2026</div>
         </div>
       </div>
-      <div class="section-title">Due &amp; Outstanding <span id="dueCount">2 families</span></div>
-      <div class="group-box">
-        <div class="row" data-student="Sarkis Ablabutyan" data-amount="0" data-status="current">
+      <div class="section-title">Due &amp; Outstanding <span id="dueCount">2 invoices</span></div>
+      <div class="group-box" id="dueBox">
+        <div class="row invoice-row"
+             data-invoice="INV-1049"
+             data-student="Vahagn Ablabutyan"
+             data-student-id="100235"
+             data-amount="1200"
+             data-status="due"
+             data-description="Monthly Tuition">
           <div class="avatar-box"></div>
           <div class="row-main">
-            <div>Sarkis Ablabutyan &nbsp;·&nbsp; Grade 2 &nbsp;·&nbsp; ID# 100234</div>
-            <div class="row-meta">Monthly Tuition $1,200.00 &nbsp;·&nbsp; Next due 09/01/2026 &nbsp;·&nbsp; Anahit Ablabutyan</div>
+            <div>INV-1049 &nbsp;·&nbsp; Vahagn Ablabutyan &nbsp;·&nbsp; ID# 100235</div>
+            <div class="row-meta row-due-meta">Monthly Tuition &nbsp;·&nbsp; Due 08/01/2026 &nbsp;·&nbsp; Anahit Ablabutyan</div>
           </div>
-          <div class="row-amount">$0.00</div>
-          <div class="status-tag">Current</div>
+          <div class="row-amount">$1,200.00</div>
+          <div class="status-tag">Due</div>
+          <button type="button" class="btn mark-paid-btn">Mark as paid</button>
         </div>
-        <div class="row" data-student="Vahagn Ablabutyan" data-amount="1350" data-status="overdue" data-description="Monthly Tuition + After-school">
+        <div class="row invoice-row"
+             data-invoice="INV-1045"
+             data-student="Vahagn Ablabutyan"
+             data-student-id="100235"
+             data-amount="150"
+             data-status="overdue"
+             data-description="After-school Fee">
           <div class="avatar-box"></div>
           <div class="row-main">
-            <div>Vahagn Ablabutyan &nbsp;·&nbsp; Grade 1 &nbsp;·&nbsp; ID# 100235</div>
-            <div class="row-meta row-due-meta">Monthly Tuition $1,200.00 + After-school $150.00 &nbsp;·&nbsp; Due 08/01/2026 &nbsp;·&nbsp; Anahit Ablabutyan</div>
+            <div>INV-1045 &nbsp;·&nbsp; Vahagn Ablabutyan &nbsp;·&nbsp; ID# 100235</div>
+            <div class="row-meta row-due-meta">After-school Fee &nbsp;·&nbsp; Due 07/15/2026 &nbsp;·&nbsp; Anahit Ablabutyan</div>
           </div>
-          <div class="row-amount">$1,350.00</div>
+          <div class="row-amount">$150.00</div>
           <div class="status-tag filled">Overdue</div>
-        </div>
-        <div class="box-footer">
-          <button type="button" class="btn" id="markPaidBtn">Mark as paid</button>
+          <button type="button" class="btn mark-paid-btn">Mark as paid</button>
         </div>
       </div>
 
@@ -599,7 +610,14 @@
       <div class="changelog" id="changelog">
         <div class="changelog-head">
           <h3>Changelog — Payments module wireframe</h3>
-          <div class="changelog-ver">Current: v0.2.0</div>
+          <div class="changelog-ver">Current: v0.2.1</div>
+        </div>
+
+        <div class="log-entry">
+          <div class="log-meta">v0.2.1 &nbsp;·&nbsp; 18 Aug 2026 &nbsp;·&nbsp; per-invoice Mark as paid</div>
+          <ul>
+            <li>Due &amp; Outstanding lists each invoice. Mark as paid sits at the end of that invoice, not as one button for all balances.</li>
+          </ul>
         </div>
 
         <div class="log-entry">
@@ -707,12 +725,13 @@
 
   <script>
     const overlay = document.getElementById('markPaidModal');
-    const markPaidBtn = document.getElementById('markPaidBtn');
     const cancelPaidBtn = document.getElementById('cancelPaidBtn');
     const confirmPaidBtn = document.getElementById('confirmPaidBtn');
     const commentInput = document.getElementById('payComment');
     const methodInput = document.getElementById('payMethod');
     const summaryEl = document.getElementById('markPaidSummary');
+    const dueBox = document.getElementById('dueBox');
+    let pendingInvoiceRow = null;
 
     const recordOverlay = document.getElementById('recordPaymentModal');
     const recordPaymentBtn = document.getElementById('recordPaymentBtn');
@@ -740,7 +759,7 @@
     function nextReceiptNo() { return 'RCP-' + nextReceipt++; }
 
     function unpaidRows() {
-      return Array.from(document.querySelectorAll('.group-box .row[data-status]'))
+      return Array.from(dueBox.querySelectorAll('.invoice-row'))
         .filter(row => row.dataset.status !== 'current' && Number(row.dataset.amount) > 0);
     }
 
@@ -819,6 +838,7 @@
       const amount = Number(row.dataset.amount);
       const student = row.dataset.student;
       const description = row.dataset.description || 'Payment';
+      const invoice = row.dataset.invoice || '';
       const receipt = nextReceiptNo();
       const payMethod = method && method !== '—' ? method : '—';
 
@@ -826,15 +846,20 @@
       row.dataset.amount = '0';
       row.querySelector('.row-amount').textContent = '$0.00';
       const tag = row.querySelector('.status-tag');
-      tag.textContent = 'Current';
+      tag.textContent = 'Paid';
       tag.classList.remove('filled');
       const meta = row.querySelector('.row-due-meta');
       if (meta) {
-        meta.textContent = description + ' $1,350.00  ·  Paid ' + paidDate + '  ·  Anahit Ablabutyan';
+        meta.textContent = description + '  ·  Paid ' + paidDate + '  ·  ' + invoice;
+      }
+      const btn = row.querySelector('.mark-paid-btn');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Paid';
       }
 
       Array.from(txnBody.querySelectorAll('tr')).forEach(tr => {
-        if (tr.dataset.student === student && tr.dataset.status === 'Overdue') {
+        if (invoice && tr.dataset.invoice === invoice) {
           tr.dataset.status = 'Paid';
           if (payMethod !== '—') tr.dataset.method = payMethod;
           tr.dataset.receipt = receipt;
@@ -857,7 +882,7 @@
         }
       });
 
-      return { amount, student, description, receipt };
+      return { amount, student, description, receipt, invoice };
     }
 
     function refreshTotals() {
@@ -868,19 +893,14 @@
         .reduce((sum, row) => sum + Number(row.dataset.amount), 0);
       document.getElementById('outstandingValue').textContent = money(outstanding);
       document.getElementById('overdueValue').textContent = money(overdue);
-      document.getElementById('dueCount').textContent = due.length ? due.length + ' outstanding' : '0 outstanding';
-      if (!due.length) {
-        markPaidBtn.disabled = true;
-        markPaidBtn.textContent = 'Marked as paid';
-      }
+      document.getElementById('dueCount').textContent = due.length ? due.length + ' invoice' + (due.length === 1 ? '' : 's') : '0 outstanding';
     }
 
-    function openModal() {
-      const due = unpaidRows();
-      if (!due.length) return;
-      const total = due.reduce((sum, row) => sum + Number(row.dataset.amount), 0);
-      const names = due.map(row => row.dataset.student).join(', ');
-      summaryEl.textContent = names + '  ·  ' + money(total) + ' outstanding';
+    function openModal(row) {
+      if (!row || Number(row.dataset.amount) <= 0) return;
+      pendingInvoiceRow = row;
+      const invoice = row.dataset.invoice || 'Invoice';
+      summaryEl.textContent = invoice + '  ·  ' + row.dataset.student + '  ·  ' + money(Number(row.dataset.amount));
       commentInput.value = '';
       methodInput.value = '';
       overlay.classList.add('open');
@@ -892,36 +912,17 @@
     }
 
     function recordMarkedPayment() {
-      const due = unpaidRows();
-      if (!due.length) return;
+      const row = pendingInvoiceRow;
+      if (!row || Number(row.dataset.amount) <= 0) return;
 
       const method = methodInput.value || '—';
       const comment = commentInput.value.trim();
-      let collectedAdd = 0;
+      const { amount } = markRowPaid(row, method, '08/05/2026', comment);
 
-      due.forEach(row => {
-        const { amount, student, description, receipt } = markRowPaid(row, method, '08/05/2026', comment);
-        collectedAdd += amount;
-        const meta = studentMeta[student] || {};
-        addTransaction({
-          date: '08/05/2026',
-          invoice: nextInvoiceNo(),
-          receipt: receipt,
-          student: student,
-          studentId: meta.id || '',
-          parent: meta.parent || '',
-          description: comment ? description + ' — ' + comment : description,
-          method: method,
-          amount: money(amount),
-          status: 'Paid',
-          recordedBy: 'Front desk',
-          note: comment,
-        });
-      });
-
-      const collected = parseAmount(document.getElementById('collectedValue').textContent) + collectedAdd;
+      const collected = parseAmount(document.getElementById('collectedValue').textContent) + amount;
       document.getElementById('collectedValue').textContent = money(collected);
       refreshTotals();
+      pendingInvoiceRow = null;
       closeModal();
     }
 
@@ -940,8 +941,7 @@
       const method = recordMethod.value || '—';
       const date = recordDate.value.trim() || '08/05/2026';
       const note = recordNote.value.trim();
-      const row = Array.from(document.querySelectorAll('.group-box .row[data-student]'))
-        .find(r => r.dataset.student === student && Number(r.dataset.amount) > 0);
+      const row = unpaidRows().find(r => r.dataset.student === student);
       const description = note || (row && row.dataset.description) || 'Payment';
 
       if (row && amount >= Number(row.dataset.amount)) {
@@ -969,7 +969,12 @@
       closeRecordModal();
     }
 
-    markPaidBtn.addEventListener('click', openModal);
+    dueBox.addEventListener('click', (e) => {
+      const btn = e.target.closest('.mark-paid-btn');
+      if (!btn || btn.disabled) return;
+      e.stopPropagation();
+      openModal(btn.closest('.invoice-row'));
+    });
     cancelPaidBtn.addEventListener('click', closeModal);
     confirmPaidBtn.addEventListener('click', recordMarkedPayment);
     overlay.addEventListener('click', (e) => {
@@ -1027,12 +1032,13 @@
     }
 
     function studentBalance(name) {
-      const due = Array.from(document.querySelectorAll('.group-box .row[data-student]'))
-        .find(row => row.dataset.student === name);
-      if (!due) return { amount: '$0.00', status: 'Current' };
+      const rows = unpaidRows().filter(row => row.dataset.student === name);
+      if (!rows.length) return { amount: '$0.00', status: 'Current' };
+      const total = rows.reduce((sum, row) => sum + Number(row.dataset.amount), 0);
+      const overdue = rows.some(row => row.dataset.status === 'overdue');
       return {
-        amount: due.querySelector('.row-amount').textContent,
-        status: due.dataset.status === 'overdue' ? 'Overdue' : 'Current',
+        amount: money(total),
+        status: overdue ? 'Overdue' : 'Due',
       };
     }
 
