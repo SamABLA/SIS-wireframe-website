@@ -109,7 +109,7 @@
   .summary-row{
     display:flex;
     gap:12px;
-    margin-bottom:18px;
+    margin-top:18px;
   }
   .summary-box{
     border:1px solid var(--line-dark);
@@ -295,23 +295,6 @@
       <h1>Hello Teacher</h1>
       <div class="datetime">Wed, Aug 5th 2026&nbsp;&nbsp;&nbsp;3:44pm</div>
       <div class="placeholder-input">Copilot can do anything</div>
-    </div>
-
-    <!-- Content -->
-    <div class="content">
-      <div class="content-header">
-        <h2>Payments</h2>
-        <button class="btn">Record Payment</button>
-      </div>
-
-      <div class="toolbar">
-        <div class="placeholder-input">Search Student / Invoice</div>
-        <div class="placeholder-input">Filter by ▾</div>
-        <div class="placeholder-input">Status: All ▾</div>
-      </div>
-
-      <hr class="divider">
-
       <div class="summary-row">
         <div class="summary-box">
           <div class="label">Collected (Aug)</div>
@@ -330,6 +313,22 @@
           <div class="value">09/01/2026</div>
         </div>
       </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="content-header">
+        <h2>Payments</h2>
+        <button class="btn">Record Payment</button>
+      </div>
+
+      <div class="toolbar">
+        <div class="placeholder-input">Search Student / Invoice</div>
+        <div class="placeholder-input">Filter by ▾</div>
+        <div class="placeholder-input">Status: All ▾</div>
+      </div>
+
+      <hr class="divider">
 
       <div class="section-title">Due &amp; Outstanding <span id="dueCount">2 families</span></div>
       <div class="group-box">
@@ -524,13 +523,11 @@
 
         const tr = document.createElement('tr');
         const desc = comment ? description + ' — ' + comment : description;
-        tr.innerHTML =
-          '<td>08/05/2026</td>' +
-          '<td>' + student + '</td>' +
-          '<td>' + desc + '</td>' +
-          '<td>' + method + '</td>' +
-          '<td>' + money(amount) + '</td>' +
-          '<td>Paid</td>';
+        ['08/05/2026', student, desc, method, money(amount), 'Paid'].forEach(text => {
+          const td = document.createElement('td');
+          td.textContent = text;
+          tr.appendChild(td);
+        });
         tbody.insertBefore(tr, tbody.firstChild);
       });
 
