@@ -94,11 +94,41 @@
 
   .toolbar{
     display:flex;
+    align-items:center;
     gap:10px;
     margin-bottom:16px;
     flex-wrap:wrap;
   }
   .toolbar .placeholder-input{padding:8px 12px; font-size:13px;}
+  .search-back{
+    display:none;
+    border:1px solid var(--line-dark);
+    background:#fff;
+    width:34px;
+    height:34px;
+    font-size:16px;
+    line-height:1;
+    cursor:pointer;
+    font-family:inherit;
+    color:var(--text);
+    flex-shrink:0;
+  }
+  .search-back.visible{display:inline-flex; align-items:center; justify-content:center;}
+  .search-input{
+    color:var(--text);
+    max-width:480px;
+    flex:1;
+    min-width:220px;
+    font-family:inherit;
+  }
+  .search-input::placeholder{color:var(--line);}
+
+  body[data-mode="search"] .dash-only,
+  body[data-mode="detail"] .dash-only{display:none;}
+  body[data-mode="search"] .content-header,
+  body[data-mode="detail"] .content-header,
+  body[data-mode="search"] .summary-row,
+  body[data-mode="detail"] .summary-row{display:none;}
 
   .divider{
     border:none;
@@ -149,7 +179,8 @@
     border:1px solid var(--line-dark);
     flex-shrink:0;
   }
-  .row-main{flex:1;}
+  .row.result-row{cursor:pointer;}
+  .row.result-row:hover{background:var(--gray-fill-2);}
   .row-meta{
     font-size:11px;
     color:var(--line);
@@ -272,7 +303,23 @@
     margin-bottom:3px;
   }
   .detail-item .value{font-size:13px;}
-  .detail-item.wide{grid-column:1 / -1;}
+  .result-kind{
+    font-size:10.5px;
+    color:var(--line);
+    border:1px solid var(--line);
+    padding:1px 7px;
+    white-space:nowrap;
+  }
+  .search-empty{
+    font-size:13px;
+    color:var(--line);
+    font-style:italic;
+    padding:18px 4px;
+  }
+  .detail-panel{
+    border:1px solid var(--line-dark);
+    padding:24px;
+  }
 
   .annotation{
     font-size:11px;
@@ -328,13 +375,15 @@
       </div>
 
       <div class="toolbar">
-        <div class="placeholder-input">Search Student / Invoice</div>
-        <div class="placeholder-input">Filter by ▾</div>
-        <div class="placeholder-input">Status: All ▾</div>
+        <button type="button" class="search-back" id="searchBackBtn" aria-label="Back to dashboard">&larr;</button>
+        <input class="placeholder-input search-input" id="searchInput" type="search" placeholder="Search Student / Invoice" autocomplete="off">
+        <div class="placeholder-input dash-only">Filter by ▾</div>
+        <div class="placeholder-input dash-only">Status: All ▾</div>
       </div>
 
       <hr class="divider">
 
+      <div id="dashboardView">
       <div class="section-title">Due &amp; Outstanding <span id="dueCount">2 families</span></div>
       <div class="group-box">
         <div class="row" data-student="Sarkis Ablabutyan" data-amount="0" data-status="current">
@@ -488,6 +537,20 @@
         </tbody>
       </table>
       <div class="annotation">↑ school-wide payments desk — balances, record payment, recent activity. Student-level billing stays on the profile Billing tab.</div>
+      </div>
+
+      <div id="searchView" hidden>
+        <div class="section-title">Search results <span id="searchCount"></span></div>
+        <div class="group-box" id="searchResults"></div>
+        <div class="search-empty" id="searchEmpty" hidden>No matching students or invoices.</div>
+      </div>
+
+      <div id="detailView" hidden>
+        <div class="section-title" id="detailTitle">Payment</div>
+        <div class="detail-panel">
+          <div class="detail-grid" id="searchDetailGrid"></div>
+        </div>
+      </div>
 
     </div>
   </div>
@@ -642,6 +705,15 @@
     function openTxnDetail(tr) {
       const d = tr.dataset;
       txnDetailSummary.textContent = (d.invoice || '—') + '  ·  ' + (d.receipt && d.receipt !== '—' ? d.receipt : 'No receipt yet');
+      renderDetailGrid(txnDetailGrid, d);
+      txnDetailOverlay.classList.add('open');
+    }
+
+    function closeTxnDetail() {
+      txnDetailOverlay.classList.remove('open');
+    }
+
+    function renderDetailGrid(grid, d) {
       const fields = [
         ['Invoice #', d.invoice || '—'],
         ['Receipt #', d.receipt || '—'],
@@ -656,7 +728,7 @@
         ['Recorded by', d.recordedBy || '—'],
         ['Note', d.note || '—', true],
       ];
-      txnDetailGrid.innerHTML = '';
+      grid.innerHTML = '';
       fields.forEach(([label, value, wide]) => {
         const item = document.createElement('div');
         item.className = 'detail-item' + (wide ? ' wide' : '');
@@ -668,13 +740,8 @@
         val.textContent = value || '—';
         item.appendChild(lab);
         item.appendChild(val);
-        txnDetailGrid.appendChild(item);
+        grid.appendChild(item);
       });
-      txnDetailOverlay.classList.add('open');
-    }
-
-    function closeTxnDetail() {
-      txnDetailOverlay.classList.remove('open');
     }
 
     function markRowPaid(row, method, paidDate, note) {
@@ -856,10 +923,212 @@
 
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
-      if (overlay.classList.contains('open')) closeModal();
-      if (recordOverlay.classList.contains('open')) closeRecordModal();
-      if (txnDetailOverlay.classList.contains('open')) closeTxnDetail();
+      if (overlay.classList.contains('open')) { closeModal(); return; }
+      if (recordOverlay.classList.contains('open')) { closeRecordModal(); return; }
+      if (txnDetailOverlay.classList.contains('open')) { closeTxnDetail(); return; }
+      if (document.body.dataset.mode && document.body.dataset.mode !== 'dashboard') {
+        searchInput.value = '';
+        document.body.dataset.mode = 'dashboard';
+        searchBackBtn.classList.remove('visible');
+        dashboardView.hidden = false;
+        searchView.hidden = true;
+        detailView.hidden = true;
+      }
     });
+
+    const searchInput = document.getElementById('searchInput');
+    const searchBackBtn = document.getElementById('searchBackBtn');
+    const dashboardView = document.getElementById('dashboardView');
+    const searchView = document.getElementById('searchView');
+    const detailView = document.getElementById('detailView');
+    const searchResults = document.getElementById('searchResults');
+    const searchEmpty = document.getElementById('searchEmpty');
+    const searchCount = document.getElementById('searchCount');
+    const searchDetailGrid = document.getElementById('searchDetailGrid');
+    const detailTitle = document.getElementById('detailTitle');
+
+    function setMode(mode) {
+      document.body.dataset.mode = mode;
+      searchBackBtn.classList.toggle('visible', mode !== 'dashboard');
+      dashboardView.hidden = mode !== 'dashboard';
+      searchView.hidden = mode !== 'search';
+      detailView.hidden = mode !== 'detail';
+    }
+
+    function studentBalance(name) {
+      const due = Array.from(document.querySelectorAll('.group-box .row[data-student]'))
+        .find(row => row.dataset.student === name);
+      if (!due) return { amount: '$0.00', status: 'Current' };
+      return {
+        amount: due.querySelector('.row-amount').textContent,
+        status: due.dataset.status === 'overdue' ? 'Overdue' : 'Current',
+      };
+    }
+
+    function haystack(values) {
+      return values.join(' ').toLowerCase();
+    }
+
+    function runSearch(query) {
+      const q = query.trim().toLowerCase();
+      if (!q) {
+        setMode('dashboard');
+        return;
+      }
+
+      const hits = [];
+      const seenStudents = new Set();
+
+      Object.keys(studentMeta).forEach(name => {
+        const meta = studentMeta[name];
+        if (haystack([name, meta.id, meta.parent]).includes(q)) {
+          seenStudents.add(name);
+          const bal = studentBalance(name);
+          hits.push({
+            kind: 'Student',
+            title: name,
+            meta: 'ID# ' + meta.id + '  ·  ' + meta.parent,
+            amount: bal.amount,
+            status: bal.status,
+            student: name,
+          });
+        }
+      });
+
+      Array.from(txnBody.querySelectorAll('tr')).forEach(tr => {
+        const d = tr.dataset;
+        if (d.student && !seenStudents.has(d.student) && haystack([d.student, d.studentId, d.parent]).includes(q)) {
+          seenStudents.add(d.student);
+          const bal = studentBalance(d.student);
+          hits.push({
+            kind: 'Student',
+            title: d.student,
+            meta: 'ID# ' + (d.studentId || '') + '  ·  ' + (d.parent || ''),
+            amount: bal.amount,
+            status: bal.status,
+            student: d.student,
+          });
+        }
+        if (haystack([d.invoice, d.receipt, d.student, d.studentId, d.description, d.amount, d.status]).includes(q)) {
+          hits.push({
+            kind: d.receipt && d.receipt !== '—' ? 'Receipt' : 'Invoice',
+            title: d.invoice + (d.receipt && d.receipt !== '—' ? '  ·  ' + d.receipt : ''),
+            meta: d.student + '  ·  ' + d.description + '  ·  ' + d.date,
+            amount: d.amount,
+            status: d.status,
+            txn: d,
+          });
+        }
+      });
+
+      searchResults.innerHTML = '';
+      hits.forEach(hit => {
+        const row = document.createElement('div');
+        row.className = 'row result-row';
+        row.innerHTML =
+          '<div class="avatar-box"></div>' +
+          '<div class="row-main">' +
+            '<div></div>' +
+            '<div class="row-meta"></div>' +
+          '</div>' +
+          '<div class="row-amount"></div>' +
+          '<div class="status-tag"></div>' +
+          '<div class="result-kind"></div>';
+        row.querySelector('.row-main div').textContent = hit.title;
+        row.querySelector('.row-meta').textContent = hit.meta;
+        row.querySelector('.row-amount').textContent = hit.amount;
+        const tag = row.querySelector('.status-tag');
+        tag.textContent = hit.status;
+        if (hit.status === 'Overdue') tag.classList.add('filled');
+        row.querySelector('.result-kind').textContent = hit.kind;
+        row.addEventListener('click', () => openSearchDetail(hit));
+        searchResults.appendChild(row);
+      });
+
+      searchCount.textContent = hits.length ? hits.length + ' found' : '';
+      searchEmpty.hidden = hits.length > 0;
+      searchResults.hidden = hits.length === 0;
+      setMode('search');
+    }
+
+    function openSearchDetail(hit) {
+      if (hit.txn) {
+        detailTitle.textContent = 'Payment';
+        renderDetailGrid(searchDetailGrid, hit.txn);
+        setMode('detail');
+        return;
+      }
+
+      const meta = studentMeta[hit.student] || {};
+      const txns = Array.from(txnBody.querySelectorAll('tr'))
+        .filter(tr => tr.dataset.student === hit.student)
+        .map(tr => tr.dataset);
+      const latest = txns[0] || {
+        student: hit.student,
+        studentId: meta.id || '',
+        parent: meta.parent || '',
+        invoice: '—',
+        receipt: '—',
+        date: '—',
+        status: hit.status,
+        amount: hit.amount,
+        description: 'No transactions on file',
+        method: '—',
+        recordedBy: '—',
+        note: '',
+      };
+      detailTitle.textContent = hit.student;
+      renderDetailGrid(searchDetailGrid, latest);
+      if (txns.length) {
+        const list = document.createElement('div');
+        list.className = 'detail-item wide';
+        const lab = document.createElement('div');
+        lab.className = 'label';
+        lab.textContent = 'Invoices for this student';
+        list.appendChild(lab);
+        txns.forEach(d => {
+          const line = document.createElement('div');
+          line.className = 'row result-row';
+          line.style.marginTop = '8px';
+          line.style.border = '1px solid var(--line-dark)';
+          const main = document.createElement('div');
+          main.className = 'row-main';
+          const title = document.createElement('div');
+          title.textContent = d.invoice + (d.receipt && d.receipt !== '—' ? '  ·  ' + d.receipt : '');
+          const metaLine = document.createElement('div');
+          metaLine.className = 'row-meta';
+          metaLine.textContent = d.date + '  ·  ' + d.description;
+          main.appendChild(title);
+          main.appendChild(metaLine);
+          const amt = document.createElement('div');
+          amt.className = 'row-amount';
+          amt.textContent = d.amount;
+          const tag = document.createElement('div');
+          tag.className = 'status-tag' + (d.status === 'Overdue' ? ' filled' : '');
+          tag.textContent = d.status;
+          line.appendChild(main);
+          line.appendChild(amt);
+          line.appendChild(tag);
+          line.addEventListener('click', (e) => {
+            e.stopPropagation();
+            detailTitle.textContent = 'Payment';
+            renderDetailGrid(searchDetailGrid, d);
+          });
+          list.appendChild(line);
+        });
+        searchDetailGrid.appendChild(list);
+      }
+      setMode('detail');
+    }
+
+    function backToDashboard() {
+      searchInput.value = '';
+      setMode('dashboard');
+    }
+
+    searchInput.addEventListener('input', () => runSearch(searchInput.value));
+    searchBackBtn.addEventListener('click', backToDashboard);
+    setMode('dashboard');
   </script>
 
 </body>
