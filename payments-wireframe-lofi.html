@@ -257,6 +257,22 @@
     font-weight:normal;
   }
   th{background:var(--gray-fill-2);}
+  #txnTable tbody tr{cursor:pointer;}
+  #txnTable tbody tr:hover{background:var(--gray-fill-2);}
+
+  .detail-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px 16px;
+    margin-bottom:8px;
+  }
+  .detail-item .label{
+    font-size:11px;
+    color:var(--line);
+    margin-bottom:3px;
+  }
+  .detail-item .value{font-size:13px;}
+  .detail-item.wide{grid-column:1 / -1;}
 
   .annotation{
     font-size:11px;
@@ -344,11 +360,13 @@
         </div>
       </div>
 
-      <div class="section-title">Recent Transactions</div>
+      <div class="section-title">Recent Transactions <span>click a row for details</span></div>
       <table id="txnTable">
         <thead>
         <tr>
           <th>Date</th>
+          <th>Invoice #</th>
+          <th>Receipt #</th>
           <th>Student</th>
           <th>Description</th>
           <th>Method</th>
@@ -357,40 +375,110 @@
         </tr>
         </thead>
         <tbody>
-        <tr>
+        <tr class="txn-row"
+            data-date="08/01/2026"
+            data-invoice="INV-1048"
+            data-receipt="RCP-8811"
+            data-student="Sarkis Ablabutyan"
+            data-student-id="100234"
+            data-parent="Anahit Ablabutyan"
+            data-description="Monthly Tuition"
+            data-method="Card"
+            data-amount="$1,200.00"
+            data-status="Paid"
+            data-recorded-by="Card auto-pay"
+            data-note="August tuition">
           <td>08/01/2026</td>
+          <td>INV-1048</td>
+          <td>RCP-8811</td>
           <td>Sarkis Ablabutyan</td>
           <td>Monthly Tuition</td>
           <td>Card</td>
           <td>$1,200.00</td>
           <td>Paid</td>
         </tr>
-        <tr>
+        <tr class="txn-row"
+            data-date="08/01/2026"
+            data-invoice="INV-1049"
+            data-receipt="—"
+            data-student="Vahagn Ablabutyan"
+            data-student-id="100235"
+            data-parent="Anahit Ablabutyan"
+            data-description="Monthly Tuition"
+            data-method="—"
+            data-amount="$1,200.00"
+            data-status="Overdue"
+            data-recorded-by="—"
+            data-note="">
           <td>08/01/2026</td>
+          <td>INV-1049</td>
+          <td>—</td>
           <td>Vahagn Ablabutyan</td>
           <td>Monthly Tuition</td>
           <td>—</td>
           <td>$1,200.00</td>
           <td>Overdue</td>
         </tr>
-        <tr>
+        <tr class="txn-row"
+            data-date="07/15/2026"
+            data-invoice="INV-1045"
+            data-receipt="—"
+            data-student="Vahagn Ablabutyan"
+            data-student-id="100235"
+            data-parent="Anahit Ablabutyan"
+            data-description="After-school Fee"
+            data-method="—"
+            data-amount="$150.00"
+            data-status="Overdue"
+            data-recorded-by="—"
+            data-note="">
           <td>07/15/2026</td>
+          <td>INV-1045</td>
+          <td>—</td>
           <td>Vahagn Ablabutyan</td>
           <td>After-school Fee</td>
           <td>—</td>
           <td>$150.00</td>
           <td>Overdue</td>
         </tr>
-        <tr>
+        <tr class="txn-row"
+            data-date="07/01/2026"
+            data-invoice="INV-1041"
+            data-receipt="RCP-8808"
+            data-student="Sarkis Ablabutyan"
+            data-student-id="100234"
+            data-parent="Anahit Ablabutyan"
+            data-description="Monthly Tuition"
+            data-method="Card"
+            data-amount="$1,200.00"
+            data-status="Paid"
+            data-recorded-by="Card auto-pay"
+            data-note="July tuition">
           <td>07/01/2026</td>
+          <td>INV-1041</td>
+          <td>RCP-8808</td>
           <td>Sarkis Ablabutyan</td>
           <td>Monthly Tuition</td>
           <td>Card</td>
           <td>$1,200.00</td>
           <td>Paid</td>
         </tr>
-        <tr>
+        <tr class="txn-row"
+            data-date="07/01/2026"
+            data-invoice="INV-1042"
+            data-receipt="RCP-8809"
+            data-student="Vahagn Ablabutyan"
+            data-student-id="100235"
+            data-parent="Anahit Ablabutyan"
+            data-description="Monthly Tuition"
+            data-method="Check"
+            data-amount="$1,200.00"
+            data-status="Paid"
+            data-recorded-by="Front desk"
+            data-note="July tuition · check #1184">
           <td>07/01/2026</td>
+          <td>INV-1042</td>
+          <td>RCP-8809</td>
           <td>Vahagn Ablabutyan</td>
           <td>Monthly Tuition</td>
           <td>Check</td>
@@ -472,6 +560,17 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="txnDetailModal" role="dialog" aria-modal="true" aria-labelledby="txnDetailTitle">
+    <div class="modal wide">
+      <h3 id="txnDetailTitle">Transaction details</h3>
+      <div class="modal-summary" id="txnDetailSummary"></div>
+      <div class="detail-grid" id="txnDetailGrid"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="closeTxnDetailBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const overlay = document.getElementById('markPaidModal');
     const markPaidBtn = document.getElementById('markPaidBtn');
@@ -490,6 +589,21 @@
     const recordDate = document.getElementById('recordDate');
     const recordMethod = document.getElementById('recordMethod');
     const recordNote = document.getElementById('recordNote');
+    const txnDetailOverlay = document.getElementById('txnDetailModal');
+    const txnDetailSummary = document.getElementById('txnDetailSummary');
+    const txnDetailGrid = document.getElementById('txnDetailGrid');
+    const closeTxnDetailBtn = document.getElementById('closeTxnDetailBtn');
+    const txnBody = document.querySelector('#txnTable tbody');
+
+    const studentMeta = {
+      'Sarkis Ablabutyan': { id: '100234', parent: 'Anahit Ablabutyan' },
+      'Vahagn Ablabutyan': { id: '100235', parent: 'Anahit Ablabutyan' },
+    };
+    let nextInvoice = 1050;
+    let nextReceipt = 8812;
+
+    function nextInvoiceNo() { return 'INV-' + nextInvoice++; }
+    function nextReceiptNo() { return 'RCP-' + nextReceipt++; }
 
     function unpaidRows() {
       return Array.from(document.querySelectorAll('.group-box .row[data-status]'))
@@ -505,22 +619,70 @@
       return isNaN(n) ? 0 : n;
     }
 
-    function addTransaction(date, student, description, method, amountLabel, status) {
-      const tbody = document.querySelector('#txnTable tbody');
+    function addTransaction(data) {
       const tr = document.createElement('tr');
-      [date, student, description, method, amountLabel, status].forEach(text => {
-        const td = document.createElement('td');
-        td.textContent = text;
-        tr.appendChild(td);
-      });
-      tbody.insertBefore(tr, tbody.firstChild);
+      tr.className = 'txn-row';
+      applyTxnData(tr, data);
+      txnBody.insertBefore(tr, txnBody.firstChild);
+      return tr;
     }
 
-    function markRowPaid(row, method, paidDate) {
+    function applyTxnData(tr, data) {
+      Object.keys(data).forEach(key => {
+        tr.dataset[key] = data[key];
+      });
+      tr.innerHTML = '';
+      ['date', 'invoice', 'receipt', 'student', 'description', 'method', 'amount', 'status'].forEach(key => {
+        const td = document.createElement('td');
+        td.textContent = data[key] || '—';
+        tr.appendChild(td);
+      });
+    }
+
+    function openTxnDetail(tr) {
+      const d = tr.dataset;
+      txnDetailSummary.textContent = (d.invoice || '—') + '  ·  ' + (d.receipt && d.receipt !== '—' ? d.receipt : 'No receipt yet');
+      const fields = [
+        ['Invoice #', d.invoice || '—'],
+        ['Receipt #', d.receipt || '—'],
+        ['Date', d.date || '—'],
+        ['Status', d.status || '—'],
+        ['Student', d.student || '—'],
+        ['Student ID#', d.studentId || '—'],
+        ['Parent / payer', d.parent || '—'],
+        ['Amount', d.amount || '—'],
+        ['Description', d.description || '—', true],
+        ['Method', d.method || '—'],
+        ['Recorded by', d.recordedBy || '—'],
+        ['Note', d.note || '—', true],
+      ];
+      txnDetailGrid.innerHTML = '';
+      fields.forEach(([label, value, wide]) => {
+        const item = document.createElement('div');
+        item.className = 'detail-item' + (wide ? ' wide' : '');
+        const lab = document.createElement('div');
+        lab.className = 'label';
+        lab.textContent = label;
+        const val = document.createElement('div');
+        val.className = 'value';
+        val.textContent = value || '—';
+        item.appendChild(lab);
+        item.appendChild(val);
+        txnDetailGrid.appendChild(item);
+      });
+      txnDetailOverlay.classList.add('open');
+    }
+
+    function closeTxnDetail() {
+      txnDetailOverlay.classList.remove('open');
+    }
+
+    function markRowPaid(row, method, paidDate, note) {
       const amount = Number(row.dataset.amount);
       const student = row.dataset.student;
       const description = row.dataset.description || 'Payment';
-      const tbody = document.querySelector('#txnTable tbody');
+      const receipt = nextReceiptNo();
+      const payMethod = method && method !== '—' ? method : '—';
 
       row.dataset.status = 'current';
       row.dataset.amount = '0';
@@ -533,15 +695,31 @@
         meta.textContent = description + ' $1,350.00  ·  Paid ' + paidDate + '  ·  Anahit Ablabutyan';
       }
 
-      Array.from(tbody.querySelectorAll('tr')).forEach(tr => {
-        const cells = tr.querySelectorAll('td');
-        if (cells.length && cells[1].textContent === student && cells[5].textContent === 'Overdue') {
-          if (method && method !== '—') cells[3].textContent = method;
-          cells[5].textContent = 'Paid';
+      Array.from(txnBody.querySelectorAll('tr')).forEach(tr => {
+        if (tr.dataset.student === student && tr.dataset.status === 'Overdue') {
+          tr.dataset.status = 'Paid';
+          if (payMethod !== '—') tr.dataset.method = payMethod;
+          tr.dataset.receipt = receipt;
+          tr.dataset.recordedBy = 'Front desk';
+          if (note) tr.dataset.note = note;
+          applyTxnData(tr, {
+            date: tr.dataset.date,
+            invoice: tr.dataset.invoice,
+            receipt: tr.dataset.receipt,
+            student: tr.dataset.student,
+            description: tr.dataset.description,
+            method: tr.dataset.method,
+            amount: tr.dataset.amount,
+            status: tr.dataset.status,
+            studentId: tr.dataset.studentId,
+            parent: tr.dataset.parent,
+            recordedBy: tr.dataset.recordedBy,
+            note: tr.dataset.note || '',
+          });
         }
       });
 
-      return { amount, student, description };
+      return { amount, student, description, receipt };
     }
 
     function refreshTotals() {
@@ -584,10 +762,23 @@
       let collectedAdd = 0;
 
       due.forEach(row => {
-        const { amount, student, description } = markRowPaid(row, method, '08/05/2026');
+        const { amount, student, description, receipt } = markRowPaid(row, method, '08/05/2026', comment);
         collectedAdd += amount;
-        const desc = comment ? description + ' — ' + comment : description;
-        addTransaction('08/05/2026', student, desc, method, money(amount), 'Paid');
+        const meta = studentMeta[student] || {};
+        addTransaction({
+          date: '08/05/2026',
+          invoice: nextInvoiceNo(),
+          receipt: receipt,
+          student: student,
+          studentId: meta.id || '',
+          parent: meta.parent || '',
+          description: comment ? description + ' — ' + comment : description,
+          method: method,
+          amount: money(amount),
+          status: 'Paid',
+          recordedBy: 'Front desk',
+          note: comment,
+        });
       });
 
       const collected = parseAmount(document.getElementById('collectedValue').textContent) + collectedAdd;
@@ -616,11 +807,25 @@
       const description = note || (row && row.dataset.description) || 'Payment';
 
       if (row && amount >= Number(row.dataset.amount)) {
-        markRowPaid(row, method, date);
+        markRowPaid(row, method, date, note);
         refreshTotals();
       }
 
-      addTransaction(date, student, description, method, money(amount), 'Paid');
+      const meta = studentMeta[student] || {};
+      addTransaction({
+        date: date,
+        invoice: nextInvoiceNo(),
+        receipt: nextReceiptNo(),
+        student: student,
+        studentId: meta.id || '',
+        parent: meta.parent || '',
+        description: description,
+        method: method,
+        amount: money(amount),
+        status: 'Paid',
+        recordedBy: 'Front desk',
+        note: note,
+      });
       const collected = parseAmount(document.getElementById('collectedValue').textContent) + amount;
       document.getElementById('collectedValue').textContent = money(collected);
       closeRecordModal();
@@ -640,10 +845,20 @@
       if (e.target === recordOverlay) closeRecordModal();
     });
 
+    txnBody.addEventListener('click', (e) => {
+      const tr = e.target.closest('tr');
+      if (tr) openTxnDetail(tr);
+    });
+    closeTxnDetailBtn.addEventListener('click', closeTxnDetail);
+    txnDetailOverlay.addEventListener('click', (e) => {
+      if (e.target === txnDetailOverlay) closeTxnDetail();
+    });
+
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
       if (overlay.classList.contains('open')) closeModal();
       if (recordOverlay.classList.contains('open')) closeRecordModal();
+      if (txnDetailOverlay.classList.contains('open')) closeTxnDetail();
     });
   </script>
 
