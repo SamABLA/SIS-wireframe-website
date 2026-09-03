@@ -419,7 +419,11 @@
           openBulkAdd();
           return;
         }
-        // Wireframe placeholder — remaining options open their own flow later.
+        if (btn.dataset.action === 'add-student') {
+          window.location.href = 'student-profile-new-editable.html';
+          return;
+        }
+        // Wireframe placeholder — Upload Document opens its own flow later.
         closeAddStudentModal();
       });
     });

@@ -10,6 +10,7 @@ Static HTML wireframes for the ChainLink Student Information System.
 | `students-wireframe-lofi.html` | Students dashboard |
 | `student-profile-wireframe-interactive.html` | Interactive student profile |
 | `payments-wireframe-lofi.html` | Payments dashboard |
+| `student-profile-new-editable.html` | Add Student — editable full profile |
 | `site-shell.html` | Redirects to `index.html` |
 
 ## Local preview
