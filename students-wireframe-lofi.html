@@ -259,8 +259,42 @@
     display:flex;
     gap:10px;
     margin-bottom:16px;
+    align-items:center;
+    flex-wrap:wrap;
   }
   .toolbar .placeholder-input{padding:8px 12px; font-size:13px;}
+  .filter-grade{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+  }
+  .filter-grade label{
+    color:var(--line);
+    white-space:nowrap;
+  }
+  .filter-grade select{
+    border:1px solid var(--line-dark);
+    background:var(--go-fill);
+    padding:8px 12px;
+    font-size:13px;
+    font-family:inherit;
+    color:var(--text);
+    border-radius:999px;
+    cursor:pointer;
+    min-width:140px;
+  }
+  .filter-grade select:hover{background:var(--go-fill-hover);}
+  .row.hidden{display:none;}
+  .empty-filter{
+    display:none;
+    border:1px dashed var(--line-dark);
+    padding:16px 14px;
+    font-size:13px;
+    color:var(--line);
+    margin-bottom:16px;
+  }
+  .empty-filter.visible{display:block;}
 
   .divider{
     border:none;
@@ -356,22 +390,42 @@
 
       <div class="toolbar">
         <div class="placeholder-input">Search Student</div>
-        <div class="placeholder-input">Filter by ▾</div>
+        <div class="filter-grade">
+          <label for="gradeFilter">Grade</label>
+          <select id="gradeFilter" aria-label="Filter students by grade">
+            <option value="all" selected>All grades</option>
+            <option value="K">K</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="unassigned">Unassigned</option>
+          </select>
+        </div>
       </div>
 
       <hr class="divider">
 
       <!-- grouped pair, mirrors the circled rows in the sketch -->
-      <div class="group-box">
-        <a class="row" href="student-profile-wireframe-interactive.html">
+      <div class="group-box" id="studentList">
+        <a class="row" href="student-profile-wireframe-interactive.html" data-grade="2">
           <div class="avatar-box"></div>
           <div>Sarkis Ablabutyan &nbsp;·&nbsp; Grade 2 &nbsp;·&nbsp; ID# 100234 &nbsp;·&nbsp; 818-416-2307 &nbsp;·&nbsp; email@gmail.com</div>
         </a>
-        <a class="row" href="student-profile-wireframe-interactive.html">
+        <a class="row" href="student-profile-wireframe-interactive.html" data-grade="1">
           <div class="avatar-box"></div>
           <div>Vahagn Ablabutyan &nbsp;·&nbsp; Grade 1 &nbsp;·&nbsp; ID# 100235 &nbsp;·&nbsp; 818-696-5555 &nbsp;·&nbsp; email@yahoo.com</div>
         </a>
       </div>
+      <div class="empty-filter" id="emptyFilter">No students in this grade.</div>
       <div class="annotation">↑ grouped box = the pair you circled together · click a row to open the student profile</div>
 
     </div>
@@ -574,6 +628,26 @@
       // Wireframe placeholder — AI extraction flow comes next.
       closeAddStudentModal();
     });
+
+    const gradeFilter = document.getElementById('gradeFilter');
+    const studentRows = document.querySelectorAll('#studentList .row');
+    const emptyFilter = document.getElementById('emptyFilter');
+    const studentList = document.getElementById('studentList');
+
+    function applyGradeFilter() {
+      const selected = gradeFilter.value;
+      let visible = 0;
+      studentRows.forEach((row) => {
+        const grade = row.dataset.grade || 'unassigned';
+        const match = selected === 'all' || grade === selected;
+        row.classList.toggle('hidden', !match);
+        if (match) visible += 1;
+      });
+      emptyFilter.classList.toggle('visible', visible === 0);
+      studentList.style.display = visible === 0 ? 'none' : '';
+    }
+
+    gradeFilter.addEventListener('change', applyGradeFilter);
   </script>
 
 </body>
