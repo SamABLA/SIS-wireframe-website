@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Add Student — Full Profile</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root{
+    --line:#8A8A8A;
+    --line-dark:#333;
+    --text:#333;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family: Helvetica, Arial, sans-serif;
+    color:var(--text);
+    background:#fff;
+    display:flex;
+    min-height:100vh;
+  }
+
+  .sidebar{
+    width:64px;
+    border-right:1px solid var(--line-dark);
+    padding:20px 0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+    flex-shrink:0;
+  }
+  .nav-icon{
+    width:14px; height:14px;
+    border:1px solid var(--line-dark);
+    border-radius:50%;
+  }
+
+  .main{flex:1; display:flex; flex-direction:column;}
+
+  .header{
+    border-bottom:1px solid var(--line-dark);
+    padding:28px 32px 24px;
+    text-align:center;
+  }
+  .header h1{
+    font-size:20px;
+    font-weight:normal;
+    margin-bottom:16px;
+  }
+  .search-pill{
+    border:1px solid var(--line-dark);
+    border-radius:20px;
+    height:34px;
+    max-width:420px;
+    margin:0 auto;
+  }
+
+  .content{padding:24px 32px;}
+
+  /* Persistent student strip — stays visible across all tabs */
+  .student-strip{
+    display:flex;
+    align-items:center;
+    gap:22px;
+    border:1px solid var(--line-dark);
+    padding:14px 20px;
+    margin-bottom:18px;
+    font-size:13px;
+    flex-wrap:wrap;
+  }
+  .student-strip .avatar-circle{width:36px; height:36px; font-size:9px;}
+  .student-strip .strip-item{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    padding-left:22px;
+    border-left:1px solid var(--line);
+  }
+  .student-strip .strip-item:first-of-type{border-left:none; padding-left:0;}
+  .student-strip .strip-label{font-size:10.5px; color:var(--line);}
+  .student-strip .strip-value{font-size:13px;}
+  .student-strip .strip-name{font-size:15px; text-decoration:underline;}
+
+  /* Tab bar */
+  .tab-bar{
+    border:1px solid var(--line-dark);
+    border-radius:22px;
+    display:flex;
+    gap:8px;
+    padding:6px;
+    margin-bottom:20px;
+    width:fit-content;
+  }
+  .tab{
+    border:1px solid var(--line-dark);
+    border-radius:16px;
+    padding:7px 16px;
+    font-size:12.5px;
+    white-space:nowrap;
+    background:#fff;
+    cursor:pointer;
+    font-family:inherit;
+    color:var(--text);
+  }
+  .tab.active{
+    background:#EAEAEA;
+  }
+  .tab:hover{background:#F3F3F3;}
+  .tab.active:hover{background:#EAEAEA;}
+
+  /* Dropdown "custom" tab */
+  .dropdown-tab{position:relative;}
+  .dropdown-menu{
+    position:absolute;
+    top:calc(100% + 6px);
+    left:0;
+    border:1px solid var(--line-dark);
+    background:#fff;
+    min-width:190px;
+    display:none;
+    z-index:10;
+  }
+  .dropdown-menu.open{display:block;}
+  .dropdown-option{
+    padding:10px 14px;
+    font-size:12.5px;
+    cursor:pointer;
+    border-bottom:1px dashed var(--line);
+  }
+  .dropdown-option:last-child{border-bottom:none;}
+  .dropdown-option:hover{background:#F3F3F3;}
+  .dropdown-option.selected{background:#EAEAEA;}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  /* Shared box styles */
+  .box{
+    border:1px solid var(--line-dark);
+    padding:24px;
+  }
+
+  /* Overview */
+  .profile-head{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:20px;
+  }
+  .avatar-circle{
+    width:44px; height:44px;
+    border:1px solid var(--line-dark);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:10px;
+    color:var(--line);
+    flex-shrink:0;
+  }
+  .profile-head .name{
+    font-size:16px;
+    text-decoration:underline;
+  }
+  .field-row{
+    display:flex;
+    gap:28px;
+    font-size:13px;
+    margin-bottom:10px;
+    flex-wrap:wrap;
+  }
+  .field-row span{color:var(--line);}
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    min-width:140px;
+    flex:1;
+  }
+  .field label{
+    font-size:11px;
+    color:var(--line);
+  }
+  .field input,
+  .field select{
+    border:1px solid var(--line-dark);
+    padding:7px 10px;
+    font-size:13px;
+    font-family:inherit;
+    color:var(--text);
+    background:#fff;
+    border-radius:0;
+    width:100%;
+  }
+  .edit-banner{
+    border:1px dashed var(--line-dark);
+    padding:10px 14px;
+    font-size:12.5px;
+    margin-bottom:16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .edit-banner .mode-tag{
+    border:1px solid var(--line-dark);
+    padding:2px 8px;
+    font-size:11px;
+    white-space:nowrap;
+  }
+  .empty-state{
+    font-size:13px;
+    color:var(--line);
+    font-style:italic;
+    padding:8px 0;
+  }
+  .top-nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .top-nav a{
+    color:var(--text);
+    text-decoration:none;
+    font-size:13px;
+    border:1px solid var(--line-dark);
+    padding:7px 12px;
+  }
+  .top-nav a:hover{background:#F3F3F3;}
+  .divider{
+    border:none;
+    border-top:1px solid var(--line-dark);
+    margin:16px 0 20px;
+  }
+  .status-row{display:flex; gap:14px; margin-bottom:28px;}
+  .status-box{
+    border:1px solid var(--line-dark);
+    height:44px; flex:1;
+    display:flex; align-items:center; gap:8px;
+    padding:0 14px; font-size:12.5px;
+  }
+  .check-circle{
+    width:16px; height:16px;
+    border:1px solid var(--line-dark);
+    border-radius:50%;
+    flex-shrink:0;
+  }
+  .footer-actions{display:flex; justify-content:flex-end; gap:10px;}
+  .btn{
+    border:1px solid var(--line-dark);
+    background:#fff;
+    padding:9px 16px;
+    font-size:13px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .btn:hover{background:#F3F3F3;}
+
+  /* Section title used inside panels */
+  .section-title{
+    font-size:14px;
+    margin-bottom:14px;
+  }
+  .section-title span{
+    color:var(--line);
+    font-size:11.5px;
+    margin-left:8px;
+  }
+
+  /* Documents tab */
+  .doc-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 0;
+    font-size:13px;
+  }
+  .doc-row + .doc-row{border-top:1px dashed var(--line);}
+  .doc-row .doc-status{
+    display:flex; align-items:center; gap:8px;
+    font-size:11.5px;
+    color:var(--line);
+  }
+
+  /* Journal tab */
+  .section-title-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .pill-group{display:flex; gap:8px;}
+  .pill-stat{
+    border:1px solid var(--line-dark);
+    border-radius:12px;
+    padding:4px 12px;
+    font-size:11px;
+    white-space:nowrap;
+  }
+  .pill-stat.good{background:#F5F5F5;}
+  .pill-stat.infraction{background:#EAEAEA;}
+
+  /* Reusable dropdown attached to a button (not just the tab bar) */
+  .dropdown-wrap{position:relative;}
+
+  .journal-entry{
+    padding:12px 0;
+    font-size:13px;
+  }
+  .journal-entry + .journal-entry{border-top:1px dashed var(--line);}
+  .journal-meta{
+    display:flex;
+    gap:12px;
+    font-size:11.5px;
+    color:var(--line);
+    margin-bottom:4px;
+  }
+  .tag-box{
+    border:1px solid var(--line-dark);
+    border-radius:10px;
+    padding:1px 9px;
+    font-size:10.5px;
+  }
+
+  /* Billing tab */
+  .billing-summary{
+    display:flex;
+    gap:14px;
+    margin-bottom:22px;
+  }
+  .summary-box{
+    border:1px solid var(--line-dark);
+    flex:1;
+    padding:14px;
+  }
+  .summary-box .label{font-size:11px; color:var(--line); margin-bottom:6px;}
+  .summary-box .value{font-size:16px;}
+  table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  th, td{
+    border:1px solid var(--line-dark);
+    padding:8px 10px;
+    text-align:left;
+    font-weight:normal;
+  }
+  th{background:#EAEAEA;}
+
+  /* Schedule & Attendance tab */
+  .attendance-summary{
+    display:flex;
+    gap:14px;
+    margin-bottom:22px;
+  }
+  .sched-grid{
+    display:grid;
+    grid-template-columns:80px repeat(5, 1fr);
+    border:1px solid var(--line-dark);
+  }
+  .sched-cell{
+    border:1px solid var(--line);
+    padding:10px 8px;
+    font-size:11.5px;
+    min-height:44px;
+  }
+  .sched-head{
+    background:#EAEAEA;
+    text-align:center;
+    font-size:11.5px;
+  }
+
+  /* Contact tab */
+  .parent-card{
+    border:1px solid var(--line-dark);
+    padding:16px;
+    margin-bottom:14px;
+  }
+  .parent-title{
+    font-size:13px;
+    text-decoration:underline;
+    margin-bottom:12px;
+  }
+  .parent-fields{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+    font-size:12.5px;
+  }
+  .parent-fields span{color:var(--line);}
+
+  .emergency-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:11px 0;
+    font-size:13px;
+  }
+  .emergency-row + .emergency-row{border-top:1px dashed var(--line);}
+  .emergency-meta{font-size:11.5px; color:var(--line);}
+
+  .contact-dash{
+    border:1px solid var(--line-dark);
+    padding:18px;
+  }
+  .dash-row{
+    display:flex;
+    gap:12px;
+    margin-bottom:12px;
+    flex-wrap:wrap;
+  }
+  .dash-select{
+    border:1px solid var(--line-dark);
+    padding:9px 12px;
+    font-size:12.5px;
+    flex:1;
+    min-width:180px;
+    font-family:inherit;
+    background:#fff;
+    color:var(--text);
+  }
+  .method-toggle{display:flex; gap:8px;}
+  .method-btn{
+    border:1px solid var(--line-dark);
+    padding:9px 16px;
+    font-size:12.5px;
+    cursor:pointer;
+    background:#fff;
+    font-family:inherit;
+  }
+  .method-btn.active{background:#EAEAEA;}
+  .message-box{
+    border:1px solid var(--line-dark);
+    min-height:70px;
+    padding:10px 12px;
+    font-size:12.5px;
+    color:var(--line);
+    margin-bottom:14px;
+  }
+
+  /* Student History tab — timeline */
+  .timeline{position:relative; padding-left:26px;}
+  .timeline::before{
+    content:'';
+    position:absolute;
+    left:5px; top:4px; bottom:4px;
+    border-left:1px solid var(--line-dark);
+  }
+  .timeline-item{position:relative; padding-bottom:22px;}
+  .timeline-item:last-child{padding-bottom:0;}
+  .timeline-item::before{
+    content:'';
+    position:absolute;
+    left:-26px; top:2px;
+    width:10px; height:10px;
+    border:1px solid var(--line-dark);
+    border-radius:50%;
+    background:#fff;
+  }
+  .timeline-time{font-size:11px; color:var(--line); margin-bottom:3px;}
+  .timeline-time span{border:1px solid var(--line); border-radius:9px; padding:1px 8px; margin-left:8px; font-size:10px;}
+  .timeline-desc{font-size:13px; margin-bottom:2px;}
+  .timeline-actor{font-size:11.5px; color:var(--line);}
+
+  /* Milestones tab */
+  .goal-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    padding:12px 0;
+    font-size:13px;
+  }
+  .goal-row + .goal-row{border-top:1px dashed var(--line);}
+  .goal-meta{display:flex; align-items:center; gap:14px;}
+  .progress-track{
+    border:1px solid var(--line-dark);
+    height:10px;
+    width:140px;
+    position:relative;
+    flex-shrink:0;
+  }
+  .progress-fill{
+    position:absolute; left:0; top:0; bottom:0;
+    background:#EAEAEA;
+    border-right:1px solid var(--line-dark);
+  }
+  .status-pill{
+    border:1px solid var(--line-dark);
+    border-radius:10px;
+    padding:2px 10px;
+    font-size:11px;
+    white-space:nowrap;
+  }
+
+  .pathway-track{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:8px;
+  }
+  .pathway-step{
+    border:1px solid var(--line-dark);
+    padding:9px 14px;
+    font-size:12px;
+  }
+  .pathway-step.current{background:#EAEAEA;}
+  .pathway-arrow{color:var(--line); font-size:14px;}
+
+  .annotation{
+    font-size:11px;
+    color:#999;
+    font-style:italic;
+    margin-top:14px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <div class="nav-icon"></div>
+    <div class="nav-icon"></div>
+    <div class="nav-icon"></div>
+  </div>
+
+  <div class="main">
+
+    <div class="header">
+      <h1 id="pageTitle">Add Student</h1>
+      <div class="search-pill"></div>
+    </div>
+
+    <div class="content">
+
+      <div class="top-nav">
+        <a href="students-wireframe-lofi.html">&larr; Students</a>
+        <div class="footer-actions" style="margin:0;">
+          <button type="button" class="btn" id="cancelProfileBtn">Cancel</button>
+          <button type="button" class="btn" id="saveProfileBtn">Save Student</button>
+        </div>
+      </div>
+
+      <div class="edit-banner">
+        <div id="editBannerText">Full profile — edit fields below. Other tabs stay available for later enrollment details.</div>
+        <div class="mode-tag" id="modeTag">New student</div>
+      </div>
+
+      <!-- Persistent across all tabs -->
+      <div class="student-strip">
+        <div class="avatar-circle">photo</div>
+        <div class="strip-item">
+          <div class="strip-label">Student</div>
+          <div class="strip-value strip-name" id="stripName">New Student</div>
+        </div>
+        <div class="strip-item">
+          <div class="strip-label">Student ID#</div>
+          <div class="strip-value" id="stripId">Auto-assigned on save</div>
+        </div>
+        <div class="strip-item">
+          <div class="strip-label">Primary Parent Contact</div>
+          <div class="strip-value" id="stripParent">—</div>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="tab-bar" id="tabBar">
+        <button class="tab active" data-tab="overview">Overview</button>
+        <button class="tab" data-tab="documents">Documents</button>
+        <button class="tab" data-tab="contact">Contact</button>
+        <button class="tab" data-tab="journal">Journal</button>
+        <button class="tab" data-tab="billing">Billing</button>
+        <button class="tab" data-tab="schedule">Schedule &amp; Attendance</button>
+        <div class="dropdown-tab">
+          <button class="tab" id="dropdownToggle">More ▾</button>
+          <div class="dropdown-menu" id="dropdownMenu">
+            <div class="dropdown-option" data-panel="history">Student History</div>
+            <div class="dropdown-option" data-panel="milestones">Milestones</div>
+            <div class="dropdown-option" data-panel="assignments">Assignments</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OVERVIEW -->
+      <div class="panel active box" id="panel-overview">
+        <div class="profile-head">
+          <div class="avatar-circle">photo</div>
+          <div class="name" id="overviewName">New Student</div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="firstName">First name</label>
+            <input id="firstName" type="text" placeholder="First name">
+          </div>
+          <div class="field">
+            <label for="lastName">Last name</label>
+            <input id="lastName" type="text" placeholder="Last name">
+          </div>
+          <div class="field">
+            <label for="studentId">Student ID#</label>
+            <input id="studentId" type="text" placeholder="Auto on save" value="">
+          </div>
+          <div class="field">
+            <label for="grade">Grade</label>
+            <select id="grade">
+              <option value="" selected>Unassigned</option>
+              <option value="K">K</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="parentName">Parent/Guardian</label>
+            <input id="parentName" type="text" placeholder="Parent / guardian name">
+          </div>
+          <div class="field">
+            <label for="parentPhone">Parent phone</label>
+            <input id="parentPhone" type="text" placeholder="Phone">
+          </div>
+          <div class="field">
+            <label for="parentEmail">Parent email</label>
+            <input id="parentEmail" type="email" placeholder="Email">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="gender">Gender</label>
+            <select id="gender">
+              <option value="" selected>Select</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Non-binary</option>
+              <option>Prefer not to say</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="birthdate">Birthdate</label>
+            <input id="birthdate" type="text" placeholder="MM/DD/YYYY">
+          </div>
+          <div class="field">
+            <label for="ethnicity">Ethnicity</label>
+            <input id="ethnicity" type="text" placeholder="Ethnicity">
+          </div>
+          <div class="field">
+            <label for="enrollmentDate">Enrollment Date</label>
+            <input id="enrollmentDate" type="text" placeholder="MM/DD/YYYY" value="09/03/2026">
+          </div>
+        </div>
+        <hr class="divider">
+        <div class="status-row">
+          <div class="status-box"><span class="check-circle"></span> Docs pending</div>
+          <div class="status-box"><span class="check-circle"></span> Standing not set</div>
+          <div class="status-box"><span class="check-circle"></span> Billing not set</div>
+        </div>
+        <div class="footer-actions">
+          <button type="button" class="btn" id="saveOverviewBtn">Save Student</button>
+        </div>
+      </div>
+
+      <!-- DOCUMENTS -->
+      <div class="panel box" id="panel-documents">
+        <div class="section-title">Compliance Documents <span>0 of 7 on file</span></div>
+        <div class="empty-state">No documents yet — upload after the student is saved, or use Upload Document from Add Student.</div>
+        <div class="footer-actions" style="margin-top:20px;">
+          <button type="button" class="btn">Upload Document</button>
+        </div>
+      </div>
+
+      <!-- CONTACT -->
+      <div class="panel box" id="panel-contact">
+        <div class="section-title">Parents / Guardians</div>
+
+        <div class="parent-card">
+          <div class="parent-title">Parent/Guardian #1 — Primary</div>
+          <div class="field-row">
+            <div class="field">
+              <label for="contactParentName">Name</label>
+              <input id="contactParentName" type="text" placeholder="Name">
+            </div>
+            <div class="field">
+              <label for="contactRelation">Relationship</label>
+              <input id="contactRelation" type="text" placeholder="Mother / Father / Guardian">
+            </div>
+            <div class="field">
+              <label for="contactPhone">Phone</label>
+              <input id="contactPhone" type="text" placeholder="Phone">
+            </div>
+            <div class="field">
+              <label for="contactEmail">Email</label>
+              <input id="contactEmail" type="email" placeholder="Email">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="contactAddress">Address</label>
+              <input id="contactAddress" type="text" placeholder="Street, City, State ZIP">
+            </div>
+            <div class="field">
+              <label for="contactPreferred">Preferred Contact</label>
+              <select id="contactPreferred">
+                <option value="" selected>Select</option>
+                <option>Email</option>
+                <option>Text</option>
+                <option>Phone</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+        <div class="section-title">Emergency Contacts <span>0 of 5 added</span></div>
+        <div class="empty-state">No emergency contacts yet.</div>
+        <div class="footer-actions" style="margin-top:16px;">
+          <button type="button" class="btn">Add Emergency Contact</button>
+        </div>
+      </div>
+
+      <!-- JOURNAL -->
+      <div class="panel box" id="panel-journal">
+        <div class="section-title">Daily Journal</div>
+        <div class="empty-state">No journal entries yet for this new student.</div>
+        <div class="footer-actions" style="margin-top:20px;">
+          <button type="button" class="btn">Add Journal Entry</button>
+        </div>
+      </div>
+
+      <!-- BILLING -->
+      <div class="panel box" id="panel-billing">
+        <div class="section-title">Billing</div>
+        <div class="empty-state">No tuition plan or invoices yet. Set billing after the student is saved.</div>
+      </div>
+
+      <!-- SCHEDULE & ATTENDANCE -->
+      <div class="panel box" id="panel-schedule">
+        <div class="section-title">Schedule &amp; Attendance</div>
+        <div class="empty-state">No schedule or attendance recorded yet.</div>
+      </div>
+
+      <!-- STUDENT HISTORY -->
+      <div class="panel box" id="panel-history">
+        <div class="section-title">Student History</div>
+        <div class="empty-state">History will begin when the profile is created.</div>
+      </div>
+
+      <!-- MILESTONES -->
+      <div class="panel box" id="panel-milestones">
+        <div class="section-title">Milestones</div>
+        <div class="empty-state">No milestones yet.</div>
+      </div>
+
+      <!-- ASSIGNMENTS -->
+      <div class="panel box" id="panel-assignments">
+        <div class="section-title">Assignments</div>
+        <div class="empty-state">No assignments yet.</div>
+      </div>
+
+      <div class="annotation" id="footNote">
+        New student full profile — fill Overview (and Contact), then Save Student. Other tabs are ready for later enrollment details.
+      </div>
+
+
+    </div>
+  </div>
+
+  <script>
+    const panels = document.querySelectorAll('.panel');
+    const mainTabs = document.querySelectorAll('.tab-bar > .tab[data-tab]');
+    const dropdownToggle = document.getElementById('dropdownToggle');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    const dropdownOptions = document.querySelectorAll('.dropdown-option');
+
+    function activatePanel(panelId){
+      panels.forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + panelId).classList.add('active');
+    }
+
+    function clearActiveStates(){
+      mainTabs.forEach(t => t.classList.remove('active'));
+      dropdownToggle.classList.remove('active');
+      dropdownOptions.forEach(o => o.classList.remove('selected'));
+    }
+
+    mainTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        clearActiveStates();
+        tab.classList.add('active');
+        dropdownToggle.textContent = 'More ▾';
+        dropdownMenu.classList.remove('open');
+        activatePanel(tab.dataset.tab);
+      });
+    });
+
+    dropdownToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdownMenu.classList.toggle('open');
+    });
+
+    dropdownOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        clearActiveStates();
+        dropdownToggle.classList.add('active');
+        option.classList.add('selected');
+        dropdownToggle.textContent = option.textContent + ' ▾';
+        dropdownMenu.classList.remove('open');
+        activatePanel(option.dataset.panel);
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.dropdown-tab')) {
+        dropdownMenu.classList.remove('open');
+      }
+    });
+
+    const firstName = document.getElementById('firstName');
+    const lastName = document.getElementById('lastName');
+    const parentName = document.getElementById('parentName');
+    const parentPhone = document.getElementById('parentPhone');
+    const parentEmail = document.getElementById('parentEmail');
+    const contactParentName = document.getElementById('contactParentName');
+    const contactPhone = document.getElementById('contactPhone');
+    const contactEmail = document.getElementById('contactEmail');
+    const stripName = document.getElementById('stripName');
+    const overviewName = document.getElementById('overviewName');
+    const stripParent = document.getElementById('stripParent');
+
+    function syncName() {
+      const name = [firstName.value.trim(), lastName.value.trim()].filter(Boolean).join(' ') || 'New Student';
+      stripName.textContent = name;
+      overviewName.textContent = name;
+    }
+
+    function syncParent() {
+      const name = parentName.value.trim() || contactParentName.value.trim();
+      const phone = parentPhone.value.trim() || contactPhone.value.trim();
+      const email = parentEmail.value.trim() || contactEmail.value.trim();
+      const parts = [];
+      if (name) parts.push(name);
+      if (phone || email) parts.push([phone, email].filter(Boolean).join(' / '));
+      stripParent.textContent = parts.length ? parts.join('  ·  ') : '—';
+    }
+
+    function mirror(from, to) {
+      from.addEventListener('input', () => {
+        if (document.activeElement === from) to.value = from.value;
+      });
+    }
+
+    firstName.addEventListener('input', syncName);
+    lastName.addEventListener('input', syncName);
+    [parentName, parentPhone, parentEmail, contactParentName, contactPhone, contactEmail].forEach(el => {
+      el.addEventListener('input', syncParent);
+    });
+    mirror(parentName, contactParentName);
+    mirror(contactParentName, parentName);
+    mirror(parentPhone, contactPhone);
+    mirror(contactPhone, parentPhone);
+    mirror(parentEmail, contactEmail);
+    mirror(contactEmail, parentEmail);
+
+    function goBack() {
+      window.location.href = 'students-wireframe-lofi.html';
+    }
+
+    document.getElementById('cancelProfileBtn').addEventListener('click', goBack);
+    document.getElementById('saveProfileBtn').addEventListener('click', goBack);
+    document.getElementById('saveOverviewBtn').addEventListener('click', goBack);
+
+    const params = new URLSearchParams(window.location.search);
+    const isEdit = params.get('mode') === 'edit';
+    if (isEdit) {
+      document.title = 'Edit Profile — Student';
+      document.getElementById('pageTitle').textContent = 'Edit Profile';
+      document.getElementById('modeTag').textContent = 'Editing';
+      document.getElementById('editBannerText').textContent =
+        'Edit this student profile. Changes apply across Overview and Contact.';
+      document.getElementById('saveProfileBtn').textContent = 'Save Changes';
+      document.getElementById('saveOverviewBtn').textContent = 'Save Changes';
+      firstName.value = 'Sarkis';
+      lastName.value = 'Ablabutyan';
+      document.getElementById('studentId').value = '100234';
+      document.getElementById('grade').value = '2';
+      parentName.value = 'Anahit Ablabutyan';
+      parentPhone.value = '818-416-2307';
+      parentEmail.value = 'email@gmail.com';
+      contactParentName.value = 'Anahit Ablabutyan';
+      contactPhone.value = '818-416-2307';
+      contactEmail.value = 'email@gmail.com';
+      document.getElementById('gender').value = 'Male';
+      document.getElementById('birthdate').value = '03/12/2020';
+      document.getElementById('ethnicity').value = 'Armenian';
+      document.getElementById('enrollmentDate').value = '08/18/2025';
+      document.getElementById('stripId').textContent = '100234';
+      syncName();
+      syncParent();
+    }
+
+    firstName.focus();
+  </script>
+
+</body>
+</html>
