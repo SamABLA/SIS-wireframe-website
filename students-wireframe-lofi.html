@@ -111,6 +111,9 @@
     width:360px;
     max-width:calc(100% - 32px);
   }
+  .modal.wide{width:460px;}
+  .modal-panel{display:none;}
+  .modal-panel.active{display:block;}
   .modal h3{
     font-size:15px;
     font-weight:normal;
@@ -144,11 +147,56 @@
     color:var(--line);
     margin-top:3px;
   }
+  .modal-field{margin-bottom:14px;}
+  .modal-field label{
+    display:block;
+    font-size:12px;
+    margin-bottom:6px;
+  }
+  .modal-field label span{
+    color:var(--line);
+    font-size:11px;
+  }
+  .modal-field textarea,
+  .modal-field select{
+    width:100%;
+    border:1px solid var(--line-dark);
+    padding:8px 12px;
+    font-size:13px;
+    font-family:inherit;
+    color:var(--text);
+    background:#fff;
+    border-radius:0;
+  }
+  .modal-field textarea{
+    min-height:140px;
+    resize:vertical;
+    line-height:1.45;
+  }
+  .format-box{
+    border:1px dashed var(--line-dark);
+    padding:10px 12px;
+    font-size:12px;
+    margin-bottom:14px;
+    color:var(--text);
+  }
+  .format-box .format-title{
+    font-size:11px;
+    color:var(--line);
+    margin-bottom:6px;
+  }
+  .format-box code{
+    font-family:inherit;
+    font-size:12.5px;
+  }
   .modal-actions{
     display:flex;
     justify-content:flex-end;
     gap:10px;
     margin-top:16px;
+  }
+  .modal-actions .left{
+    margin-right:auto;
   }
 
   .toolbar{
@@ -253,23 +301,63 @@
   </div>
 
   <div class="modal-overlay" id="addStudentModal" role="dialog" aria-modal="true" aria-labelledby="addStudentTitle">
-    <div class="modal">
-      <h3 id="addStudentTitle">Add Student</h3>
-      <div class="modal-summary">Choose how you want to add</div>
-      <button type="button" class="menu-option" data-action="add-student">
-        <span class="opt-label">1. Add student</span>
-        <span class="opt-hint">Create one student profile</span>
-      </button>
-      <button type="button" class="menu-option" data-action="bulk-add">
-        <span class="opt-label">2. Bulk-Add student</span>
-        <span class="opt-hint">Add several students at once</span>
-      </button>
-      <button type="button" class="menu-option" data-action="upload-document">
-        <span class="opt-label">3. Upload Document</span>
-        <span class="opt-hint">Attach a roster or enrollment file</span>
-      </button>
-      <div class="modal-actions">
-        <button type="button" class="btn" id="cancelAddStudentBtn">Cancel</button>
+    <div class="modal" id="addStudentDialog">
+      <div class="modal-panel active" id="panelMenu">
+        <h3 id="addStudentTitle">Add Student</h3>
+        <div class="modal-summary">Choose how you want to add</div>
+        <button type="button" class="menu-option" data-action="add-student">
+          <span class="opt-label">1. Add student</span>
+          <span class="opt-hint">Create one student profile</span>
+        </button>
+        <button type="button" class="menu-option" data-action="bulk-add">
+          <span class="opt-label">2. Bulk-Add student</span>
+          <span class="opt-hint">Add several students at once</span>
+        </button>
+        <button type="button" class="menu-option" data-action="upload-document">
+          <span class="opt-label">3. Upload Document</span>
+          <span class="opt-hint">Attach a roster or enrollment file</span>
+        </button>
+        <div class="modal-actions">
+          <button type="button" class="btn" id="cancelAddStudentBtn">Cancel</button>
+        </div>
+      </div>
+
+      <div class="modal-panel" id="panelBulkAdd">
+        <h3>Bulk-Add student</h3>
+        <div class="modal-summary">Paste one student name per line</div>
+        <div class="format-box">
+          <div class="format-title">Accepted formats</div>
+          <div><code>&lt;Firstname&gt; &lt;LastName&gt;</code> &nbsp;·&nbsp; e.g. Sarkis Ablabutyan</div>
+          <div style="margin-top:4px;"><code>&lt;LastName&gt;, &lt;FirstName&gt;</code> &nbsp;·&nbsp; e.g. Ablabutyan, Sarkis</div>
+        </div>
+        <div class="modal-field">
+          <label for="bulkNames">Student names</label>
+          <textarea id="bulkNames" placeholder="Sarkis Ablabutyan&#10;Ablabutyan, Vahagn&#10;Anahit Grigoryan"></textarea>
+        </div>
+        <div class="modal-field">
+          <label for="bulkGrade">Grade for all names <span>default Unassigned</span></label>
+          <select id="bulkGrade">
+            <option value="" selected>Unassigned</option>
+            <option value="K">K</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn left" id="backBulkAddBtn">&larr; Back</button>
+          <button type="button" class="btn" id="cancelBulkAddBtn">Cancel</button>
+          <button type="button" class="btn" id="confirmBulkAddBtn">Add Students</button>
+        </div>
       </div>
     </div>
   </div>
@@ -277,18 +365,45 @@
   <script>
     const addStudentBtn = document.getElementById('addStudentBtn');
     const addStudentModal = document.getElementById('addStudentModal');
+    const addStudentDialog = document.getElementById('addStudentDialog');
     const cancelAddStudentBtn = document.getElementById('cancelAddStudentBtn');
+    const panelMenu = document.getElementById('panelMenu');
+    const panelBulkAdd = document.getElementById('panelBulkAdd');
+    const bulkNames = document.getElementById('bulkNames');
+    const bulkGrade = document.getElementById('bulkGrade');
+    const backBulkAddBtn = document.getElementById('backBulkAddBtn');
+    const cancelBulkAddBtn = document.getElementById('cancelBulkAddBtn');
+    const confirmBulkAddBtn = document.getElementById('confirmBulkAddBtn');
+
+    function showPanel(panel) {
+      panelMenu.classList.toggle('active', panel === 'menu');
+      panelBulkAdd.classList.toggle('active', panel === 'bulk');
+      addStudentDialog.classList.toggle('wide', panel === 'bulk');
+    }
 
     function openAddStudentModal() {
+      showPanel('menu');
       addStudentModal.classList.add('open');
     }
 
     function closeAddStudentModal() {
       addStudentModal.classList.remove('open');
+      showPanel('menu');
+      bulkNames.value = '';
+      bulkGrade.value = '';
+    }
+
+    function openBulkAdd() {
+      showPanel('bulk');
+      bulkNames.value = '';
+      bulkGrade.value = '';
+      bulkNames.focus();
     }
 
     addStudentBtn.addEventListener('click', openAddStudentModal);
     cancelAddStudentBtn.addEventListener('click', closeAddStudentModal);
+    cancelBulkAddBtn.addEventListener('click', closeAddStudentModal);
+    backBulkAddBtn.addEventListener('click', () => showPanel('menu'));
     addStudentModal.addEventListener('click', (e) => {
       if (e.target === addStudentModal) closeAddStudentModal();
     });
@@ -300,9 +415,18 @@
 
     addStudentModal.querySelectorAll('[data-action]').forEach(btn => {
       btn.addEventListener('click', () => {
-        // Wireframe placeholder — each option will open its own flow later.
+        if (btn.dataset.action === 'bulk-add') {
+          openBulkAdd();
+          return;
+        }
+        // Wireframe placeholder — remaining options open their own flow later.
         closeAddStudentModal();
       });
+    });
+
+    confirmBulkAddBtn.addEventListener('click', () => {
+      // Wireframe placeholder — confirm will create students later.
+      closeAddStudentModal();
     });
   </script>
 
