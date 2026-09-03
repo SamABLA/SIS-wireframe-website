@@ -189,6 +189,40 @@
     font-family:inherit;
     font-size:12.5px;
   }
+  .upload-drop{
+    border:1px dashed var(--line-dark);
+    padding:28px 16px;
+    text-align:center;
+    font-size:13px;
+    cursor:pointer;
+    margin-bottom:14px;
+  }
+  .upload-drop:hover{background:var(--gray-fill-2);}
+  .upload-drop .upload-hint{
+    font-size:11px;
+    color:var(--line);
+    margin-top:6px;
+  }
+  .upload-drop input[type="file"]{display:none;}
+  .ai-note{
+    border:1px solid var(--line-dark);
+    padding:12px 14px;
+    font-size:12.5px;
+    margin-bottom:14px;
+    display:none;
+  }
+  .ai-note.visible{display:block;}
+  .ai-note .ai-title{
+    font-size:11px;
+    color:var(--line);
+    margin-bottom:4px;
+  }
+  .uploaded-file{
+    font-size:12.5px;
+    margin-bottom:10px;
+    display:none;
+  }
+  .uploaded-file.visible{display:block;}
   .modal-actions{
     display:flex;
     justify-content:flex-end;
@@ -359,6 +393,26 @@
           <button type="button" class="btn" id="confirmBulkAddBtn">Add Students</button>
         </div>
       </div>
+
+      <div class="modal-panel" id="panelUpload">
+        <h3>Upload Document</h3>
+        <div class="modal-summary">Roster, enrollment form, or similar student document</div>
+        <label class="upload-drop" id="uploadDrop" for="uploadFile">
+          <div>Click to choose a file</div>
+          <div class="upload-hint">PDF, DOC, DOCX, CSV, or image</div>
+          <input type="file" id="uploadFile" accept=".pdf,.doc,.docx,.csv,.png,.jpg,.jpeg">
+        </label>
+        <div class="uploaded-file" id="uploadedFileName"></div>
+        <div class="ai-note" id="aiNote">
+          <div class="ai-title">After upload</div>
+          AI will read this document and fill in the student details for you to review before saving.
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn left" id="backUploadBtn">&larr; Back</button>
+          <button type="button" class="btn" id="cancelUploadBtn">Cancel</button>
+          <button type="button" class="btn" id="confirmUploadBtn" disabled>Continue</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -369,16 +423,32 @@
     const cancelAddStudentBtn = document.getElementById('cancelAddStudentBtn');
     const panelMenu = document.getElementById('panelMenu');
     const panelBulkAdd = document.getElementById('panelBulkAdd');
+    const panelUpload = document.getElementById('panelUpload');
     const bulkNames = document.getElementById('bulkNames');
     const bulkGrade = document.getElementById('bulkGrade');
     const backBulkAddBtn = document.getElementById('backBulkAddBtn');
     const cancelBulkAddBtn = document.getElementById('cancelBulkAddBtn');
     const confirmBulkAddBtn = document.getElementById('confirmBulkAddBtn');
+    const uploadFile = document.getElementById('uploadFile');
+    const uploadedFileName = document.getElementById('uploadedFileName');
+    const aiNote = document.getElementById('aiNote');
+    const confirmUploadBtn = document.getElementById('confirmUploadBtn');
+    const backUploadBtn = document.getElementById('backUploadBtn');
+    const cancelUploadBtn = document.getElementById('cancelUploadBtn');
 
     function showPanel(panel) {
       panelMenu.classList.toggle('active', panel === 'menu');
       panelBulkAdd.classList.toggle('active', panel === 'bulk');
-      addStudentDialog.classList.toggle('wide', panel === 'bulk');
+      panelUpload.classList.toggle('active', panel === 'upload');
+      addStudentDialog.classList.toggle('wide', panel === 'bulk' || panel === 'upload');
+    }
+
+    function resetUpload() {
+      uploadFile.value = '';
+      uploadedFileName.textContent = '';
+      uploadedFileName.classList.remove('visible');
+      aiNote.classList.remove('visible');
+      confirmUploadBtn.disabled = true;
     }
 
     function openAddStudentModal() {
@@ -391,6 +461,7 @@
       showPanel('menu');
       bulkNames.value = '';
       bulkGrade.value = '';
+      resetUpload();
     }
 
     function openBulkAdd() {
@@ -400,10 +471,20 @@
       bulkNames.focus();
     }
 
+    function openUpload() {
+      showPanel('upload');
+      resetUpload();
+    }
+
     addStudentBtn.addEventListener('click', openAddStudentModal);
     cancelAddStudentBtn.addEventListener('click', closeAddStudentModal);
     cancelBulkAddBtn.addEventListener('click', closeAddStudentModal);
+    cancelUploadBtn.addEventListener('click', closeAddStudentModal);
     backBulkAddBtn.addEventListener('click', () => showPanel('menu'));
+    backUploadBtn.addEventListener('click', () => {
+      resetUpload();
+      showPanel('menu');
+    });
     addStudentModal.addEventListener('click', (e) => {
       if (e.target === addStudentModal) closeAddStudentModal();
     });
@@ -423,13 +504,31 @@
           window.location.href = 'student-profile-new-editable.html';
           return;
         }
-        // Wireframe placeholder — Upload Document opens its own flow later.
-        closeAddStudentModal();
+        if (btn.dataset.action === 'upload-document') {
+          openUpload();
+        }
       });
+    });
+
+    uploadFile.addEventListener('change', () => {
+      const file = uploadFile.files && uploadFile.files[0];
+      if (!file) {
+        resetUpload();
+        return;
+      }
+      uploadedFileName.textContent = 'Selected: ' + file.name;
+      uploadedFileName.classList.add('visible');
+      aiNote.classList.add('visible');
+      confirmUploadBtn.disabled = false;
     });
 
     confirmBulkAddBtn.addEventListener('click', () => {
       // Wireframe placeholder — confirm will create students later.
+      closeAddStudentModal();
+    });
+
+    confirmUploadBtn.addEventListener('click', () => {
+      // Wireframe placeholder — AI extraction flow comes next.
       closeAddStudentModal();
     });
   </script>
