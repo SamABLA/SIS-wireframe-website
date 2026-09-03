@@ -90,6 +90,65 @@
     padding:8px 14px;
     font-size:13px;
     cursor:pointer;
+    font-family:inherit;
+  }
+  .btn:hover{background:var(--gray-fill-2);}
+
+  .modal-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(255,255,255,0.82);
+    align-items:center;
+    justify-content:center;
+    z-index:20;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    border:1px solid var(--line-dark);
+    background:#fff;
+    padding:22px 24px;
+    width:360px;
+    max-width:calc(100% - 32px);
+  }
+  .modal h3{
+    font-size:15px;
+    font-weight:normal;
+    text-decoration:underline;
+    margin-bottom:6px;
+  }
+  .modal-summary{
+    font-size:12.5px;
+    color:var(--line);
+    margin-bottom:16px;
+  }
+  .menu-option{
+    display:block;
+    width:100%;
+    border:1px solid var(--line-dark);
+    background:#fff;
+    padding:12px 14px;
+    font-size:13px;
+    text-align:left;
+    cursor:pointer;
+    font-family:inherit;
+    color:var(--text);
+    margin-bottom:8px;
+  }
+  .menu-option:last-of-type{margin-bottom:0;}
+  .menu-option:hover{background:var(--gray-fill-2);}
+  .menu-option .opt-label{display:block;}
+  .menu-option .opt-hint{
+    display:block;
+    font-size:11px;
+    color:var(--line);
+    margin-top:3px;
+  }
+  .modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:16px;
   }
 
   .toolbar{
@@ -167,7 +226,7 @@
     <div class="content">
       <div class="content-header">
         <h2>Students</h2>
-        <button class="btn">Add Student</button>
+        <button type="button" class="btn" id="addStudentBtn">Add Student</button>
       </div>
 
       <div class="toolbar">
@@ -192,6 +251,60 @@
 
     </div>
   </div>
+
+  <div class="modal-overlay" id="addStudentModal" role="dialog" aria-modal="true" aria-labelledby="addStudentTitle">
+    <div class="modal">
+      <h3 id="addStudentTitle">Add Student</h3>
+      <div class="modal-summary">Choose how you want to add</div>
+      <button type="button" class="menu-option" data-action="add-student">
+        <span class="opt-label">1. Add student</span>
+        <span class="opt-hint">Create one student profile</span>
+      </button>
+      <button type="button" class="menu-option" data-action="bulk-add">
+        <span class="opt-label">2. Bulk-Add student</span>
+        <span class="opt-hint">Add several students at once</span>
+      </button>
+      <button type="button" class="menu-option" data-action="upload-document">
+        <span class="opt-label">3. Upload Document</span>
+        <span class="opt-hint">Attach a roster or enrollment file</span>
+      </button>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelAddStudentBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const addStudentBtn = document.getElementById('addStudentBtn');
+    const addStudentModal = document.getElementById('addStudentModal');
+    const cancelAddStudentBtn = document.getElementById('cancelAddStudentBtn');
+
+    function openAddStudentModal() {
+      addStudentModal.classList.add('open');
+    }
+
+    function closeAddStudentModal() {
+      addStudentModal.classList.remove('open');
+    }
+
+    addStudentBtn.addEventListener('click', openAddStudentModal);
+    cancelAddStudentBtn.addEventListener('click', closeAddStudentModal);
+    addStudentModal.addEventListener('click', (e) => {
+      if (e.target === addStudentModal) closeAddStudentModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && addStudentModal.classList.contains('open')) {
+        closeAddStudentModal();
+      }
+    });
+
+    addStudentModal.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Wireframe placeholder — each option will open its own flow later.
+        closeAddStudentModal();
+      });
+    });
+  </script>
 
 </body>
 </html>
