@@ -527,7 +527,7 @@
   <div class="main">
 
     <div class="header">
-      <h1>Add Student</h1>
+      <h1 id="pageTitle">Add Student</h1>
       <div class="search-pill"></div>
     </div>
 
@@ -542,8 +542,8 @@
       </div>
 
       <div class="edit-banner">
-        <div>Full profile — edit fields below. Other tabs stay available for later enrollment details.</div>
-        <div class="mode-tag">New student</div>
+        <div id="editBannerText">Full profile — edit fields below. Other tabs stay available for later enrollment details.</div>
+        <div class="mode-tag" id="modeTag">New student</div>
       </div>
 
       <!-- Persistent across all tabs -->
@@ -877,6 +877,35 @@
     document.getElementById('cancelProfileBtn').addEventListener('click', goBack);
     document.getElementById('saveProfileBtn').addEventListener('click', goBack);
     document.getElementById('saveOverviewBtn').addEventListener('click', goBack);
+
+    const params = new URLSearchParams(window.location.search);
+    const isEdit = params.get('mode') === 'edit';
+    if (isEdit) {
+      document.title = 'Edit Profile — Student';
+      document.getElementById('pageTitle').textContent = 'Edit Profile';
+      document.getElementById('modeTag').textContent = 'Editing';
+      document.getElementById('editBannerText').textContent =
+        'Edit this student profile. Changes apply across Overview and Contact.';
+      document.getElementById('saveProfileBtn').textContent = 'Save Changes';
+      document.getElementById('saveOverviewBtn').textContent = 'Save Changes';
+      firstName.value = 'Sarkis';
+      lastName.value = 'Ablabutyan';
+      document.getElementById('studentId').value = '100234';
+      document.getElementById('grade').value = '2';
+      parentName.value = 'Anahit Ablabutyan';
+      parentPhone.value = '818-416-2307';
+      parentEmail.value = 'email@gmail.com';
+      contactParentName.value = 'Anahit Ablabutyan';
+      contactPhone.value = '818-416-2307';
+      contactEmail.value = 'email@gmail.com';
+      document.getElementById('gender').value = 'Male';
+      document.getElementById('birthdate').value = '03/12/2020';
+      document.getElementById('ethnicity').value = 'Armenian';
+      document.getElementById('enrollmentDate').value = '08/18/2025';
+      document.getElementById('stripId').textContent = '100234';
+      syncName();
+      syncParent();
+    }
 
     firstName.focus();
   </script>
