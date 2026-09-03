@@ -9,6 +9,8 @@
     --line:#8A8A8A;
     --line-dark:#333;
     --text:#333;
+    --go-fill:#E7F3EA;
+    --go-fill-hover:#D8ECDD;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
@@ -103,10 +105,10 @@
     color:var(--text);
   }
   .tab.active{
-    background:#EAEAEA;
+    background:var(--go-fill);
   }
-  .tab:hover{background:#F3F3F3;}
-  .tab.active:hover{background:#EAEAEA;}
+  .tab:hover{background:var(--go-fill-hover);}
+  .tab.active:hover{background:var(--go-fill);}
 
   /* Dropdown "custom" tab */
   .dropdown-tab{position:relative;}
@@ -198,6 +200,11 @@
     font-family:inherit;
   }
   .btn:hover{background:#F3F3F3;}
+  .btn-go{
+    background:var(--go-fill);
+    border-radius:999px;
+  }
+  .btn-go:hover{background:var(--go-fill-hover);}
   .top-nav{
     display:flex;
     align-items:center;
@@ -211,10 +218,11 @@
     border:1px solid var(--line-dark);
     padding:7px 12px;
     font-family:inherit;
-    background:#fff;
+    background:var(--go-fill);
     cursor:pointer;
+    border-radius:999px;
   }
-  .top-nav a:hover{background:#F3F3F3;}
+  .top-nav a:hover{background:var(--go-fill-hover);}
 
   /* Section title used inside panels */
   .section-title{
@@ -473,9 +481,30 @@
     font-style:italic;
     margin-top:14px;
   }
+
+  .home-chip{
+    position:fixed;
+    top:10px;
+    right:12px;
+    z-index:30;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    border:1px solid #B86A6A;
+    background:#F7EAEA;
+    color:#7A3B3B;
+    text-decoration:none;
+    font-size:11px;
+    font-family:Helvetica, Arial, sans-serif;
+    padding:4px 10px;
+    border-radius:999px;
+    opacity:0.72;
+  }
+  .home-chip:hover{opacity:1; background:#F0DADA;}
 </style>
 </head>
 <body>
+<a class="home-chip" href="index.html" title="Back to homepage">Home</a>
 
   <div class="sidebar">
     <div class="nav-icon"></div>

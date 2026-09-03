@@ -11,6 +11,8 @@
     --gray-fill:#D9D9D9;
     --gray-fill-2:#EAEAEA;
     --text:#333;
+    --go-fill:#E7F3EA;
+    --go-fill-hover:#D8ECDD;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
@@ -98,6 +100,16 @@
     cursor:default;
   }
   .btn:disabled:hover{background:#fff;}
+  .btn-go{
+    background:var(--go-fill);
+    border-radius:999px;
+  }
+  .btn-go:hover{background:var(--go-fill-hover);}
+  .btn-go:disabled{
+    background:var(--go-fill);
+    opacity:0.55;
+  }
+  .btn-go:disabled:hover{background:var(--go-fill);}
 
   .modal-overlay{
     display:none;
@@ -134,7 +146,7 @@
     display:block;
     width:100%;
     border:1px solid var(--line-dark);
-    background:#fff;
+    background:var(--go-fill);
     padding:12px 14px;
     font-size:13px;
     text-align:left;
@@ -142,9 +154,10 @@
     font-family:inherit;
     color:var(--text);
     margin-bottom:8px;
+    border-radius:999px;
   }
   .menu-option:last-of-type{margin-bottom:0;}
-  .menu-option:hover{background:var(--gray-fill-2);}
+  .menu-option:hover{background:var(--go-fill-hover);}
   .menu-option .opt-label{display:block;}
   .menu-option .opt-hint{
     display:block;
@@ -201,8 +214,10 @@
     font-size:13px;
     cursor:pointer;
     margin-bottom:14px;
+    background:var(--go-fill);
+    border-radius:18px;
   }
-  .upload-drop:hover{background:var(--gray-fill-2);}
+  .upload-drop:hover{background:var(--go-fill-hover);}
   .upload-drop .upload-hint{
     font-size:11px;
     color:var(--line);
@@ -287,9 +302,30 @@
     font-style:italic;
     margin-top:2px;
   }
+
+  .home-chip{
+    position:fixed;
+    top:10px;
+    right:12px;
+    z-index:30;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    border:1px solid #B86A6A;
+    background:#F7EAEA;
+    color:#7A3B3B;
+    text-decoration:none;
+    font-size:11px;
+    font-family:Helvetica, Arial, sans-serif;
+    padding:4px 10px;
+    border-radius:999px;
+    opacity:0.72;
+  }
+  .home-chip:hover{opacity:1; background:#F0DADA;}
 </style>
 </head>
 <body>
+<a class="home-chip" href="index.html" title="Back to homepage">Home</a>
 
   <!-- Sidebar -->
   <div class="sidebar">
