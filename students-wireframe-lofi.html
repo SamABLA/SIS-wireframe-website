@@ -71,6 +71,8 @@
     font-size:13px;
     color:var(--line);
     max-width:480px;
+    background:var(--go-fill);
+    border-radius:999px;
   }
 
   .content{padding:24px 32px;}
@@ -88,28 +90,21 @@
   }
   .btn{
     border:1px solid var(--line-dark);
-    background:#fff;
+    background:var(--go-fill);
     padding:8px 14px;
     font-size:13px;
     cursor:pointer;
     font-family:inherit;
+    border-radius:999px;
   }
-  .btn:hover{background:var(--gray-fill-2);}
+  .btn:hover{background:var(--go-fill-hover);}
   .btn:disabled{
+    background:var(--go-fill);
+    opacity:0.55;
     color:var(--line);
     cursor:default;
   }
-  .btn:disabled:hover{background:#fff;}
-  .btn-go{
-    background:var(--go-fill);
-    border-radius:999px;
-  }
-  .btn-go:hover{background:var(--go-fill-hover);}
-  .btn-go:disabled{
-    background:var(--go-fill);
-    opacity:0.55;
-  }
-  .btn-go:disabled:hover{background:var(--go-fill);}
+  .btn:disabled:hover{background:var(--go-fill);}
 
   .modal-overlay{
     display:none;

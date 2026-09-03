@@ -99,16 +99,16 @@
     padding:7px 16px;
     font-size:12.5px;
     white-space:nowrap;
-    background:#fff;
+    background:var(--go-fill);
     cursor:pointer;
     font-family:inherit;
     color:var(--text);
   }
   .tab.active{
-    background:var(--go-fill);
+    background:var(--go-fill-hover);
   }
   .tab:hover{background:var(--go-fill-hover);}
-  .tab.active:hover{background:var(--go-fill);}
+  .tab.active:hover{background:var(--go-fill-hover);}
 
   /* Dropdown "custom" tab */
   .dropdown-tab{position:relative;}
@@ -130,8 +130,8 @@
     border-bottom:1px dashed var(--line);
   }
   .dropdown-option:last-child{border-bottom:none;}
-  .dropdown-option:hover{background:#F3F3F3;}
-  .dropdown-option.selected{background:#EAEAEA;}
+  .dropdown-option:hover{background:var(--go-fill);}
+  .dropdown-option.selected{background:var(--go-fill-hover);}
 
   .panel{display:none;}
   .panel.active{display:block;}
@@ -193,18 +193,14 @@
   .footer-actions{display:flex; justify-content:flex-end; gap:10px;}
   .btn{
     border:1px solid var(--line-dark);
-    background:#fff;
+    background:var(--go-fill);
     padding:9px 16px;
     font-size:13px;
     cursor:pointer;
     font-family:inherit;
-  }
-  .btn:hover{background:#F3F3F3;}
-  .btn-go{
-    background:var(--go-fill);
     border-radius:999px;
   }
-  .btn-go:hover{background:var(--go-fill-hover);}
+  .btn:hover{background:var(--go-fill-hover);}
   .top-nav{
     display:flex;
     align-items:center;

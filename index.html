@@ -5,25 +5,39 @@
 <title>ChainLink SIS — Wireframes</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
+  :root{
+    --go-fill:#E7F3EA;
+    --go-fill-hover:#D8ECDD;
+    --line-dark:#333;
+    --text:#222;
+  }
   *{box-sizing:border-box;}
   body{
     font-family: Arial, sans-serif;
     margin:0;
     padding:40px;
-    color:#222;
+    color:var(--text);
     background:#fff;
   }
   a{
-    color:#1155CC;
-    text-decoration:underline;
+    color:var(--text);
+    text-decoration:none;
     cursor:pointer;
   }
 
   /* Module list (Tab 1 style) */
   #module-list a{
-    display:block;
+    display:inline-block;
     font-size:15px;
     margin-bottom:14px;
+    margin-right:10px;
+    border:1px solid var(--line-dark);
+    background:var(--go-fill);
+    padding:10px 18px;
+    border-radius:999px;
+  }
+  #module-list a:hover{
+    background:var(--go-fill-hover);
   }
 
   /* Module detail (Tab 2 style) */
@@ -35,7 +49,15 @@
   #back-link{
     margin-right:14px;
     font-size:13px;
-    color:#666;
+    color:var(--text);
+    border:1px solid var(--line-dark);
+    background:var(--go-fill);
+    padding:7px 14px;
+    border-radius:999px;
+    display:inline-block;
+  }
+  #back-link:hover{
+    background:var(--go-fill-hover);
   }
   #breadcrumb-text a{
     display:inline;
@@ -123,8 +145,8 @@
       e.preventDefault();
       moduleDetail.style.display = 'none';
       moduleList.style.display = 'block';
+      moduleFrame.src = '';
     });
   </script>
-
 </body>
 </html>
