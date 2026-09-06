@@ -25,18 +25,21 @@
     cursor:pointer;
   }
 
-  /* Module list (Tab 1 style) */
+  /* Module list (Tab 1 style) — green only on modules that open a wireframe */
   #module-list a{
     display:inline-block;
     font-size:15px;
     margin-bottom:14px;
     margin-right:10px;
     border:1px solid var(--line-dark);
-    background:var(--go-fill);
+    background:#fff;
     padding:10px 18px;
     border-radius:999px;
   }
-  #module-list a:hover{
+  #module-list a.live{
+    background:var(--go-fill);
+  }
+  #module-list a.live:hover{
     background:var(--go-fill-hover);
   }
 
@@ -83,10 +86,10 @@
 
   <!-- TAB 1: module list -->
   <div id="module-list">
-    <a href="#" data-module="students">Students</a>
+    <a href="#" data-module="students" class="live">Students</a>
     <a href="#" data-module="staff">Staff</a>
     <a href="#" data-module="communication">Communication</a>
-    <a href="#" data-module="payments">Payments</a>
+    <a href="#" data-module="payments" class="live">Payments</a>
   </div>
 
   <!-- TAB 2: breadcrumb header + designated module/tab HTML -->
